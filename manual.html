@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ortho Planning Tools - Uživatelská příručka</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h3 {
+            color: #764ba2;
+            font-size: 1.4em;
+            margin: 25px 0 10px 0;
+        }
+        
+        h4 {
+            color: #555;
+            font-size: 1.1em;
+            margin: 15px 0 8px 0;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        ul, ol {
+            margin: 10px 0 20px 30px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .feature-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .tip-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .important-box {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .button-demo {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            margin: 5px;
+            font-weight: bold;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .toc {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .toc h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+        
+        .toc li {
+            margin: 8px 0;
+        }
+        
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .toc a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 Ortho Planning Tools</h1>
+            <p>Uživatelská příručka</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Verze 1.0.0 | Leden 2025</p>
+        </header>
+        
+        <div class="content">
+            <!-- Obsah -->
+            <div class="toc">
+                <h3>📋 Obsah</h3>
+                <ul>
+                    <li><a href="#uvod">1. Úvod</a></li>
+                    <li><a href="#instalace">2. Instalace a spuštění</a></li>
+                    <li><a href="#zaklady">3. Základy ovládání</a></li>
+                    <li><a href="#osteotomie">4. Plánování osteotomií</a></li>
+                    <li><a href="#uhly">5. Měření úhlů</a></li>
+                    <li><a href="#vzdalenosti">6. Měření vzdáleností</a></li>
+                    <li><a href="#dlahy">7. Knihovna dlah</a></li>
+                    <li><a href="#export">8. Export do JPG</a></li>
+                    <li><a href="#tipy">9. Tipy a triky</a></li>
+                    <li><a href="#faq">10. Často kladené otázky</a></li>
+                </ul>
+            </div>
+            
+            <!-- 1. Úvod -->
+            <h2 id="uvod">1. Úvod</h2>
+            
+            <p>Ortho Planning Tools je webová aplikace určená pro plánování ortopedických operací na RTG snímcích dolních končetin. Aplikace běží <strong>100% offline</strong> v prohlížeči a nevyžaduje instalaci ani připojení k internetu.</p>
+            
+            <div class="feature-box">
+                <h4>✨ Klíčové vlastnosti:</h4>
+                <ul>
+                    <li><strong>Offline provoz</strong> - žádná data neopouštějí počítač (GDPR compliant)</li>
+                    <li><strong>Jeden soubor</strong> - žádné složité instalace</li>
+                    <li><strong>Intuitivní ovládání</strong> - naučitelné za 5 minut</li>
+                    <li><strong>Profesionální výstupy</strong> - export do JPG pro dokumentaci</li>
+                </ul>
+            </div>
+            
+            <!-- 2. Instalace -->
+            <h2 id="instalace">2. Instalace a spuštění</h2>
+            
+            <h3>Krok 1: Stažení</h3>
+            <p>Stáhněte soubor <code>rtg_uhly_mereni.html</code> z GitHubu nebo z poskytnutého zdroje.</p>
+            
+            <h3>Krok 2: Spuštění</h3>
+            <ol>
+                <li>Otevřete soubor <strong>dvojklikem</strong> v prohlížeči</li>
+                <li>Nebo: Přetáhněte soubor do okna prohlížeče</li>
+                <li>Doporučené prohlížeče: Chrome, Firefox, Edge</li>
+            </ol>
+            
+            <div class="tip-box">
+                <strong>💡 Tip:</strong> Vytvořte si zástupce na plochu pro rychlý přístup!
+            </div>
+            
+            <!-- 3. Základy -->
+            <h2 id="zaklady">3. Základy ovládání</h2>
+            
+            <h3>Rozhraní aplikace</h3>
+            
+            <h4>Horní panel - Hlavní nástroje</h4>
+            <ul>
+                <li><span class="button-demo">📁 Nahrát RTG</span> - Načtení snímku (JPG, PNG)</li>
+                <li><span class="button-demo">∠ Měřit úhel</span> - Spustí měření úhlů</li>
+                <li><span class="button-demo">📏 Kalibrace</span> - Kalibrace pro vzdálenosti</li>
+                <li><span class="button-demo">📏 Měřit vzdálenost</span> - Měření vzdáleností v cm</li>
+                <li><span class="button-demo">🔪 Osteotomie</span> - Plánování řezu a rotace</li>
+                <li><span class="button-demo">📋 Vložit dlahy</span> - Knihovna dlah</li>
+                <li><span class="button-demo">🔄 Reset zobrazení</span> - Vrátí zoom a posun</li>
+                <li><span class="button-demo">💾 Export JPG</span> - Uloží jako obrázek</li>
+            </ul>
+            
+            <h4>Pravý panel - Menu</h4>
+            <p>Zobrazuje se podle aktivních funkcí. Pořadí podle priority:</p>
+            <ol>
+                <li>🔪 <strong>Osteotomie</strong> (slider, preview)</li>
+                <li>🦴 <strong>Vložené dlahy</strong></li>
+                <li>📊 <strong>Naměřené úhly</strong></li>
+                <li>📐 <strong>Naměřené vzdálenosti</strong></li>
+                <li>📏 <strong>Kalibrace</strong></li>
+                <li>📍 <strong>Aktuální body</strong></li>
+                <li>📋 <strong>Instrukce</strong></li>
+            </ol>
+            
+            <h3>Ovládání myší</h3>
+            <table>
+                <tr>
+                    <th>Akce</th>
+                    <th>Ovládání</th>
+                </tr>
+                <tr>
+                    <td>Zoom in / out</td>
+                    <td>Kolečko myši</td>
+                </tr>
+                <tr>
+                    <td>Posun snímku</td>
+                    <td>Pravé tlačítko + tažení<br>nebo Ctrl + levé tlačítko + tažení</td>
+                </tr>
+                <tr>
+                    <td>Přesun bodu měření</td>
+                    <td>Levé tlačítko na bod + tažení</td>
+                </tr>
+                <tr>
+                    <td>Označení bodu</td>
+                    <td>Levé tlačítko kliknutí</td>
+                </tr>
+            </table>
+            
+            <!-- 4. Osteotomie -->
+            <h2 id="osteotomie">4. Plánování osteotomií</h2>
+            
+            <p>Funkce pro plánování korekčních osteotomií s vizualizací výsledku.</p>
+            
+            <h3>4.1 Vytvoření osteotomie</h3>
+            
+            <h4>Krok 1: Spuštění</h4>
+            <ol>
+                <li>Nahrajte RTG snímek</li>
+                <li>Klikněte na <span class="button-demo">🔪 Osteotomie</span></li>
+            </ol>
+            
+            <h4>Krok 2: Označení 5 bodů</h4>
+            <p>Postupně označte následující body:</p>
+            <ol>
+                <li><strong>Začátek řezu</strong> - kde začíná linie osteotomie</li>
+                <li><strong>Konec řezu / Hinge</strong> - kde končí linie (= střed rotace, modrý bod)</li>
+                <li><strong>Pravý kotník</strong> - první bod okolo nohy</li>
+                <li><strong>Pata</strong> - nejnižší bod nohy</li>
+                <li><strong>Levý kotník</strong> - poslední bod okolo nohy</li>
+            </ol>
+            
+            <div class="tip-box">
+                <strong>💡 Tip:</strong> Body můžete přesunout přetažením pro přesnější umístění!
+            </div>
+            
+            <h4>Krok 3: Rotace</h4>
+            <p>Po označení bodů se objeví slider v pravém menu:</p>
+            <ul>
+                <li><strong>Rozsah:</strong> -30° až +30°</li>
+                <li><strong>Automatická detekce:</strong> Aplikace rozpozná OPEN nebo CLOSE wedge podle směru rotace</li>
+            </ul>
+            
+            <h3>4.2 OPEN vs CLOSE wedge</h3>
+            
+            <div class="feature-box">
+                <h4>🔄 Automatická detekce podle směru rotace:</h4>
+                <ul>
+                    <li><strong>Rotace DOLŮ (od těla)</strong> = ⚪ <strong>OPEN wedge</strong>
+                        <ul>
+                            <li>Mezi řezy se otevře mezera</li>
+                            <li>Kladné hodnoty na slideru (+)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Rotace NAHORU (k tělu)</strong> = 🔴 <strong>CLOSE wedge</strong>
+                        <ul>
+                            <li>Část kosti se překryje a odřízne</li>
+                            <li>Záporné hodnoty na slideru (-)</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            
+            <h3>4.3 Preview režim "Před/Po operaci"</h3>
+            
+            <p>Klíčová funkce pro prezentaci plánu!</p>
+            
+            <h4>Tlačítko 👁️ Před op. / Po op.</h4>
+            
+            <div class="feature-box">
+                <h4>Režim "PŘED operací" (👁️ Před op.)</h4>
+                <ul>
+                    <li>Zobrazí kost v <strong>původní pozici</strong> (0°)</li>
+                    <li>Pro <strong>CLOSE wedge</strong>:
+                        <ul>
+                            <li>🔴 Červený transparentní klín ukazuje část kosti k odstranění</li>
+                            <li>📏 Hodnota úhlu uprostřed klínu</li>
+                        </ul>
+                    </li>
+                    <li>Pro <strong>OPEN wedge</strong>:
+                        <ul>
+                            <li>Jen oranžový obrys segmentu</li>
+                            <li>Žádný klín (není co odřezávat)</li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <h4>Režim "PO operaci" (👁️ Po op.)</h4>
+                <ul>
+                    <li>Zobrazí rotovanou kost v <strong>nové pozici</strong></li>
+                    <li>Šedá oblast = původní pozice (pro srovnání)</li>
+                    <li>Vidíte <strong>výsledek operace</strong></li>
+                </ul>
+            </div>
+            
+            <div class="warning-box">
+                <strong>⚠️ Důležité:</strong> Export JPG exportuje AKTUÁLNÍ režim! Pokud chcete exportovat plánování s červeným klínem, musíte být v režimu "Před op."
+            </div>
+            
+            <h3>4.4 Tlačítka osteotomie</h3>
+            <ul>
+                <li><strong>⟲ Reset 0°</strong> - Vrátí rotaci na 0° a resetuje režim</li>
+                <li><strong>👁️ Před op. / Po op.</strong> - Přepíná mezi preview režimy</li>
+                <li><strong>✖ Zrušit osteotomii</strong> - Smaže celou osteotomii</li>
+            </ul>
+            
+            <!-- 5. Měření úhlů -->
+            <h2 id="uhly">5. Měření úhlů</h2>
+            
+            <h3>5.1 Spuštění měření</h3>
+            
+            <h4>První měření</h4>
+            <ol>
+                <li>Klikněte <span class="button-demo">∠ Měřit úhel</span></li>
+                <li>Zobrazí se <strong>modální okno</strong>: "Kolik úhlů chcete změřit?"</li>
+                <li>Vyberte počet (1-5 měření)</li>
+                <li>Označte 3 body pro každý úhel</li>
+            </ol>
+            
+            <h4>Další měření (rychlé přidávání)</h4>
+            <ol>
+                <li>Klikněte znovu <span class="button-demo">∠ Měřit úhel</span></li>
+                <li><strong>Žádný modal</strong> - rovnou přidáte jedno nové měření!</li>
+                <li>Označte 3 body</li>
+                <li>Opakujte podle potřeby</li>
+            </ol>
+            
+            <div class="tip-box">
+                <strong>💡 Smart behavior:</strong> První kliknutí = naplánujete workflow. Další kliknutí = rychle přidáváte jednotlivá měření.
+            </div>
+            
+            <h3>5.2 Označení 3 bodů</h3>
+            <p>Pro každý úhel označte:</p>
+            <ol>
+                <li><strong>První bod</strong> - Začátek prvního ramene</li>
+                <li><strong>Vrchol úhlu</strong> - Střed úhlu</li>
+                <li><strong>Třetí bod</strong> - Konec druhého ramene</li>
+            </ol>
+            
+            <p>Aplikace automaticky vykreslí:</p>
+            <ul>
+                <li>📐 Ramena úhlu (čáry z vrcholu)</li>
+                <li>🔵 Oblouk mezi rameny</li>
+                <li>📏 Hodnotu úhlu</li>
+            </ul>
+            
+            <h3>5.3 Práce s měřeními</h3>
+            
+            <p>V pravém panelu se zobrazí seznam všech měření:</p>
+            
+            <div class="feature-box">
+                <strong>Měření #1 - 45.2°</strong> [🗑️]<br>
+                [🔄 Switch] [👁️ Skrýt]
+                
+                <h4>Dostupné akce:</h4>
+                <ul>
+                    <li><strong>🗑️</strong> - Smaže POUZE toto měření</li>
+                    <li><strong>🔄 Switch</strong> - Přepne mezi reflexem/non-reflexem úhlu (360° - úhel)</li>
+                    <li><strong>👁️ Skrýt/Zobrazit</strong> - Dočasně skryje měření na canvasu</li>
+                </ul>
+            </div>
+            
+            <h3>5.4 Úprava bodů</h3>
+            <ul>
+                <li>Klikněte na <strong>červený bod</strong></li>
+                <li><strong>Táhněte</strong> na novou pozici</li>
+                <li>Úhel se <strong>automaticky přepočítá</strong></li>
+            </ul>
+            
+            <!-- 6. Vzdálenosti -->
+            <h2 id="vzdalenosti">6. Měření vzdáleností</h2>
+            
+            <p>Pro měření vzdáleností v centimetrech je nutná <strong>kalibrace</strong>.</p>
+            
+            <h3>6.1 Kalibrace</h3>
+            
+            <h4>Krok 1: Spuštění kalibrace</h4>
+            <ol>
+                <li>Klikněte <span class="button-demo">📏 Kalibrace</span></li>
+                <li>V pravém panelu se objeví sekce "Kalibrace"</li>
+            </ol>
+            
+            <h4>Krok 2: Označení známé vzdálenosti</h4>
+            <ol>
+                <li>Klikněte na <strong>2 body</strong> na snímku mezi kterými znáte vzdálenost</li>
+                <li>Ideálně:
+                    <ul>
+                        <li>Pravítko na snímku</li>
+                        <li>Známý rozměr implantátu</li>
+                        <li>Standardizovaný objekt</li>
+                    </ul>
+                </li>
+            </ol>
+            
+            <h4>Krok 3: Zadání vzdálenosti</h4>
+            <ol>
+                <li>Do pole zadejte <strong>skutečnou vzdálenost v cm</strong></li>
+                <li>Klikněte <strong>"✓ Potvrdit kalibraci"</strong></li>
+                <li>Zobrazí se: "✓ Kalibrace aktivní: 1 px = X cm"</li>
+            </ol>
+            
+            <div class="important-box">
+                <strong>⚠️ Důležité:</strong> Kalibrace platí pouze pro aktuální snímek! Při načtení nového snímku je nutné kalibrovat znovu.
+            </div>
+            
+            <h3>6.2 Měření vzdáleností</h3>
+            
+            <h4>První měření</h4>
+            <ol>
+                <li>Po kalibraci se aktivuje tlačítko <span class="button-demo">📏 Měřit vzdálenost</span></li>
+                <li>Klikněte na tlačítko</li>
+                <li>Zobrazí se modal: "Kolik vzdáleností chcete změřit?"</li>
+                <li>Vyberte počet</li>
+            </ol>
+            
+            <h4>Další měření (rychlé)</h4>
+            <ol>
+                <li>Klikněte znovu <span class="button-demo">📏 Měřit vzdálenost</span></li>
+                <li>Rovnou přidáte jedno nové měření (bez modalu)</li>
+            </ol>
+            
+            <h4>Označení bodů</h4>
+            <p>Pro každou vzdálenost:</p>
+            <ol>
+                <li>Klikněte na <strong>první bod</strong></li>
+                <li>Klikněte na <strong>druhý bod</strong></li>
+                <li>Vzdálenost se zobrazí <strong>v cm</strong> uprostřed čáry</li>
+            </ol>
+            
+            <h3>6.3 Práce se vzdálenostmi</h3>
+            
+            <p>V pravém panelu:</p>
+            <div class="feature-box">
+                <strong>Vzdálenost #1 - 12.5 cm</strong> [🗑️]<br>
+                [👁️ Skrýt]
+                
+                <h4>Dostupné akce:</h4>
+                <ul>
+                    <li><strong>🗑️</strong> - Smaže POUZE toto měření</li>
+                    <li><strong>👁️ Skrýt/Zobrazit</strong> - Skryje měření</li>
+                </ul>
+            </div>
+            
+            <!-- 7. Dlahy -->
+            <h2 id="dlahy">7. Knihovna dlah</h2>
+            
+            <h3>7.1 Vložení dlahy</h3>
+            
+            <ol>
+                <li>Klikněte <span class="button-demo">📋 Vložit dlahy</span></li>
+                <li>Zobrazí se <strong>knihovna</strong>:
+                    <ul>
+                        <li>T-plate (T tvar)</li>
+                        <li>L-plate (L tvar)</li>
+                        <li>Straight plate (rovná dlaha)</li>
+                        <li>📎 Nahrát vlastní PNG</li>
+                    </ul>
+                </li>
+                <li>Klikněte na dlahu</li>
+                <li>Dlaha se vloží do středu canvasu</li>
+            </ol>
+            
+            <h3>7.2 Manipulace s dlahou</h3>
+            
+            <table>
+                <tr>
+                    <th>Akce</th>
+                    <th>Ovládání</th>
+                </tr>
+                <tr>
+                    <td>Přesun dlahy</td>
+                    <td>Táhněte za střed dlahy</td>
+                </tr>
+                <tr>
+                    <td>Rotace</td>
+                    <td>Táhněte za <strong>zelené kolečko</strong></td>
+                </tr>
+                <tr>
+                    <td>Změna velikosti</td>
+                    <td>Táhněte za <strong>modré kolečko</strong></td>
+                </tr>
+                <tr>
+                    <td>Změna průhlednosti</td>
+                    <td>Slider "Průhlednost" v menu</td>
+                </tr>
+            </table>
+            
+            <div class="tip-box">
+                <strong>💡 Tip:</strong> Snižte průhlednost aby byla vidět kost pod dlahou!
+            </div>
+            
+            <h3>7.3 Správa dlah</h3>
+            
+            <p>V pravém panelu:</p>
+            <div class="feature-box">
+                <strong>T-plate</strong> [🗑️]<br>
+                Průhlednost: [========] 50%<br>
+                [📐 Upravit] [👁️ Skrýt]
+                
+                <h4>Dostupné akce:</h4>
+                <ul>
+                    <li><strong>🗑️</strong> - Smaže dlaху</li>
+                    <li><strong>📐 Upravit</strong> - Aktivuje dlaху pro úpravy</li>
+                    <li><strong>👁️ Skrýt/Zobrazit</strong> - Skryje dlaху</li>
+                    <li><strong>Slider</strong> - Mění průhlednost (0-100%)</li>
+                </ul>
+            </div>
+            
+            <h3>7.4 Vlastní dlahy</h3>
+            
+            <ol>
+                <li>Připravte <strong>PNG soubor</strong> s transparentním pozadím</li>
+                <li>Klikněte "📎 Nahrát vlastní PNG"</li>
+                <li>Vyberte soubor</li>
+                <li>Dlaha se přidá do knihovny</li>
+            </ol>
+            
+            <div class="tip-box">
+                <strong>💡 Tip pro vlastní dlahy:</strong>
+                <ul>
+                    <li>Použijte PNG s <strong>transparentním pozadím</strong></li>
+                    <li>Ideální rozlišení: 200-500 px</li>
+                    <li>Černobílé nebo šedé odstíny pro lepší viditelnost</li>
+                </ul>
+            </div>
+            
+            <!-- 8. Export -->
+            <h2 id="export">8. Export do JPG</h2>
+            
+            <h3>8.1 Základní export</h3>
+            
+            <ol>
+                <li>Dokončete všechna měření a úpravy</li>
+                <li>Klikněte <span class="button-demo">💾 Export JPG</span></li>
+                <li>Soubor se automaticky stáhne</li>
+                <li>Název: <code>rtg_export_YYYYMMDD_HHMMSS.jpg</code></li>
+            </ol>
+            
+            <h3>8.2 Co se exportuje?</h3>
+            
+            <ul>
+                <li>✅ RTG snímek v <strong>plném rozlišení</strong></li>
+                <li>✅ Všechna <strong>viditelná měření úhlů</strong></li>
+                <li>✅ Všechny <strong>viditelné vzdálenosti</strong></li>
+                <li>✅ Všechny <strong>viditelné dlahy</strong></li>
+                <li>✅ <strong>Osteotomie</strong> (pokud je aktivní)</li>
+            </ul>
+            
+            <h3>8.3 Export osteotomie</h3>
+            
+            <div class="important-box">
+                <h4>⚠️ POZOR: Export závisí na režimu!</h4>
+                
+                <p><strong>Režim "PO operaci":</strong></p>
+                <ul>
+                    <li>Exportuje se <strong>rotovaná kost</strong></li>
+                    <li>Šedá oblast (původní pozice)</li>
+                    <li>Výsledek po operaci</li>
+                </ul>
+                
+                <p><strong>Režim "PŘED operací":</strong></p>
+                <ul>
+                    <li>Exportuje se <strong>červený klín</strong> (pro close wedge)</li>
+                    <li>Hodnota úhlu na klínu</li>
+                    <li>Oranžový obrys segmentu</li>
+                    <li>Ideální pro <strong>prezentaci plánu</strong> chirurgům!</li>
+                </ul>
+            </div>
+            
+            <div class="tip-box">
+                <strong>💡 Best practice:</strong>
+                <ol>
+                    <li>Export v režimu "Před op." → pro dokumentaci plánu</li>
+                    <li>Export v režimu "Po op." → pro dokumentaci výsledku</li>
+                    <li>Máte 2 JPG pro kompletní dokumentaci!</li>
+                </ol>
+            </div>
+            
+            <!-- 9. Tipy a triky -->
+            <h2 id="tipy">9. Tipy a triky</h2>
+            
+            <h3>🎯 Pro přesné měření</h3>
+            <ul>
+                <li>Použijte <strong>zoom</strong> pro detailní práci</li>
+                <li><strong>Drag & drop bodů</strong> pro jemné doladění</li>
+                <li>Kalibrace na <strong>nejdelší možné vzdálenosti</strong> = vyšší přesnost</li>
+            </ul>
+            
+            <h3>⚡ Pro rychlý workflow</h3>
+            <ul>
+                <li><strong>První měření:</strong> Naplánujte počet (modal)</li>
+                <li><strong>Další měření:</strong> Rychle přidávejte bez modalu</li>
+                <li><strong>Individuální koše:</strong> Mažte jen co nepotřebujete</li>
+                <li><strong>Skrytí měření:</strong> Dočasně ukliďte canvas</li>
+            </ul>
+            
+            <h3>🔪 Pro osteotomie</h3>
+            <ul>
+                <li><strong>Hinge = modrý bod</strong> - nejdůležitější bod (střed rotace)</li>
+                <li><strong>Preview režim</strong> - přepínejte mezi před/po pro kontrolu</li>
+                <li><strong>Close wedge</strong> - vždy exportujte preview s červeným klínem pro dokumentaci!</li>
+                <li><strong>Body okolo nohy</strong> - čím přesnější, tím lepší rotace</li>
+            </ul>
+            
+            <h3>📋 Pro dlahy</h3>
+            <ul>
+                <li><strong>Průhlednost 30-50%</strong> - ideální pro viditelnost kosti</li>
+                <li><strong>Rotace za zelené kolečko</strong> - přesné úhly držením Shift (každých 15°)</li>
+                <li><strong>Vlastní PNG</strong> - připravte si knihovnu svých nejpoužívanějších dlah</li>
+            </ul>
+            
+            <h3>💾 Pro export</h3>
+            <ul>
+                <li><strong>Plné rozlišení:</strong> Export zachová kvalitu originálu</li>
+                <li><strong>Skryjte nepotřebné:</strong> Použijte 👁️ před exportem</li>
+                <li><strong>2 exporty:</strong> Před op. + Po op. = kompletní dokumentace</li>
+            </ul>
+            
+            <!-- 10. FAQ -->
+            <h2 id="faq">10. Často kladené otázky</h2>
+            
+            <h3>❓ Aplikace vyžaduje internet?</h3>
+            <p><strong>Ne!</strong> Aplikace běží 100% offline. Po stažení HTML souboru nepotřebujete žádné připojení.</p>
+            
+            <h3>❓ Ukládají se data někam?</h3>
+            <p><strong>Ne!</strong> Všechna data zůstávají ve vašem prohlížeči. Žádné nahrávání na server, žádné sledování. GDPR compliant.</p>
+            
+            <h3>❓ Mohu používat na tabletu/mobilu?</h3>
+            <p><strong>Ano</strong>, ale doporučeno je desktop/laptop pro přesnější práci. Touch ovládání je podporováno.</p>
+            
+            <h3>❓ Jak si uložit svou práci?</h3>
+            <p>Použijte <strong>💾 Export JPG</strong>. Aplikace neukládá automaticky - vše je v paměti prohlížeče.</p>
+            
+            <h3>❓ Mohu přidat více měření než modal nabízí?</h3>
+            <p><strong>Ano!</strong> Po prvním výběru (např. 3 měření) stačí kliknout znovu na "∠ Měřit úhel" a přidat další bez limitu.</p>
+            
+            <h3>❓ Jak smazat jen jedno měření?</h3>
+            <p>Každé měření má vlastní <strong>🗑️ koš</strong> v pravém menu. Klikněte na něj a smažete jen to konkrétní měření.</p>
+            
+            <h3>❓ Proč mi nefunguje měření vzdáleností?</h3>
+            <p>Nejprve musíte provést <strong>📏 Kalibraci</strong>. Bez kalibrace aplikace neví jak převést pixely na centimetry.</p>
+            
+            <h3>❓ Mohu exportovat preview s červeným klínem?</h3>
+            <p><strong>Ano!</strong> Přepněte do režimu <strong>"👁️ Před op."</strong> a pak klikněte <strong>💾 Export JPG</strong>. Exportuje se aktuální stav včetně červeného klínu.</p>
+            
+            <h3>❓ Jak poznám zda je to OPEN nebo CLOSE wedge?</h3>
+            <p>Aplikace to <strong>detekuje automaticky</strong> podle směru rotace a zobrazí nad sliderem: <strong>⚪ OPEN wedge</strong> nebo <strong>🔴 CLOSE wedge</strong></p>
+            
+            <h3>❓ Mohu změnit bod po označení?</h3>
+            <p><strong>Ano!</strong> Klikněte na <strong>červený bod</strong> a přetáhněte ho. Všechna měření se automaticky přepočítají.</p>
+            
+            <h3>❓ Podporuje aplikace DICOM?</h3>
+            <p>V současné verzi <strong>ne</strong>. Podporovány jsou <strong>JPG</strong> a <strong>PNG</strong>. DICOM můžete převést pomocí PACS vieweru na JPG.</p>
+            
+            <h3>❓ Kde najdu zdrojový kód?</h3>
+            <p>Celá aplikace je v jednom HTML souboru. Můžete ho otevřít v textovém editoru a prohlédnout/upravit zdrojový kód.</p>
+            
+            <h3>❓ Mohu aplikaci upravit pro své potřeby?</h3>
+            <p><strong>Ano!</strong> Licence MIT umožňuje úpravy. Aplikace je open-source na GitHubu.</p>
+            
+            <!-- Závěr -->
+            <h2>🎓 Závěr</h2>
+            
+            <p>Gratulujeme! Nyní znáte všechny funkce aplikace Ortho Planning Tools. </p>
+            
+            <div class="tip-box">
+                <h4>📚 Doporučený postup učení:</h4>
+                <ol>
+                    <li>Začněte <strong>měřením úhlů</strong> - nejjednodušší funkce</li>
+                    <li>Vyzkoušejte <strong>kalibraci a vzdálenosti</strong></li>
+                    <li>Procvičte <strong>osteotomie</strong> na testovacích snímcích</li>
+                    <li>Experimentujte s <strong>preview režimem</strong></li>
+                    <li>Až jste si jistí, použijte na <strong>reálných případech</strong></li>
+                </ol>
+            </div>
+            
+            <div class="important-box">
+                <h4>⚠️ Důležité upozornění:</h4>
+                <p>Tato aplikace je <strong>nástroj pro plánování</strong>, ne diagnostický software. Vždy konzultujte s lékařem a používejte klinický úsudek. Výsledky ze softwaru jsou pouze <strong>orientační</strong>.</p>
+            </div>
+            
+            <p style="text-align: center; margin-top: 40px; font-size: 1.2em;">
+                <strong>Hodně zdaru při práci! 🏥✨</strong>
+            </p>
+        </div>
+        
+        <footer>
+            <p><strong>Ortho Planning Tools</strong> | Verze 1.0.0 | Leden 2025</p>
+            <p>GitHub: <a href="https://github.com/SurgicalScripts/ortho-planning-tools" style="color: #4caf50;">SurgicalScripts/ortho-planning-tools</a></p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Vytvořeno s ❤️ pro ortopedické chirurgy</p>
+        </footer>
+    </div>
+</body>
+</html>
