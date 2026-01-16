@@ -1,4 +1,4 @@
-# ![Ortho Planning Tools](https://surgicalscripts.github.io/ortho-planning-tools/) <-- klikni na odkaz pro otevření stánky s měřením
+# [Ortho Planning Tools]https://surgicalscripts.github.io/ortho-planning-tools/) <-- klikni na odkaz pro otevření stánky s měřením
 
 **Profesionální webová aplikace pro plánování ortopedických operací na RTG snímcích dolních končetin.**
 
