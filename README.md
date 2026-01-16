@@ -2,6 +2,8 @@
 
 **Klikni na nadpis pro otevření aplikace!**
 
+[![Otevřít manuál](https://img.shields.io/badge/📖_Otevřít_manuál-4caf50?style=for-the-badge)](https://surgicalscripts.github.io/ortho-planning-tools/manual.html)
+
 **Profesionální webová aplikace pro plánování ortopedických operací na RTG snímcích dolních končetin.**
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
