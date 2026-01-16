@@ -1,0 +1,3885 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Měření úhlů na RTG snímcích</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            min-height: 42px; /* Sjednocená výška */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper label {
+            min-height: 42px; /* Stejná výška jako ostatní tlačítka */
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .main-content {
+            display: flex;
+            height: calc(100vh - 200px);
+            min-height: 500px;
+        }
+
+        .canvas-area {
+            flex: 1;
+            position: relative;
+            background: #2c3e50;
+            overflow: hidden;
+        }
+
+        .canvas-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .drop-zone {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #95a5a6;
+            pointer-events: none;
+        }
+
+        .drop-zone.hidden {
+            display: none;
+        }
+
+        .drop-zone-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: #f8f9fa;
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 1px solid #dee2e6;
+        }
+
+        .info-section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .info-section h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .measurement-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .measurement-item .angle-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .measurement-item .angle-label {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .switch-btn {
+            margin-top: 8px;
+            padding: 6px 12px;
+            font-size: 11px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .switch-btn:hover {
+            background: #5568d3;
+        }
+
+        .switch-btn:active {
+            transform: scale(0.95);
+        }
+
+        .instruction {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .zoom-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .zoom-display {
+            padding: 5px 15px;
+            background: white;
+            border-radius: 5px;
+            font-size: 14px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .point-list {
+            list-style: none;
+        }
+
+        .point-item {
+            padding: 8px;
+            background: white;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .point-item.vertex {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-vertex {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .badge-arm {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Modální okno */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 40px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .modal-btn:active {
+            transform: translateY(0);
+        }
+
+        .completion-message {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .completion-message h3 {
+            color: #155724;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+
+        .completion-message p {
+            color: #155724;
+            font-size: 14px;
+            margin: 0;
+        }
+    </style>
+    <!-- DICOM parser library -->
+    <script src="https://cdn.jsdelivr.net/npm/daikon@1.2.40/release/current/daikon.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Modální okno pro výběr počtu měření -->
+        <div id="measurementModal" class="modal">
+            <div class="modal-content">
+                <h2>Nové měření</h2>
+                <p>Kolik úhlů chcete změřit?</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="startMeasurements(1)">1 měření</button>
+                    <button class="modal-btn" onclick="startMeasurements(2)">2 měření</button>
+                    <button class="modal-btn" onclick="startMeasurements(3)">3 měření</button>
+                    <button class="modal-btn" onclick="startMeasurements(4)">4 měření</button>
+                    <button class="modal-btn" onclick="startMeasurements(5)">5 měření</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modální okno pro výběr dlahy -->
+        <div id="plateModal" class="modal">
+            <div class="modal-content">
+                <h2>📋 Výběr dlahy</h2>
+                <p>Vyberte typ dlahy:</p>
+                <div class="modal-buttons" style="flex-direction: column; gap: 10px;">
+                    <button class="modal-btn" style="width: 100%; text-align: left; padding: 15px;" onclick="selectPlate('9.256.365')">
+                        <strong>9.256.365</strong> - LCP Proximal Tibia Plate<br>
+                        <small style="color: #ddd;">128mm × 4mm | 8 otvorů</small>
+                    </button>
+                    <button class="modal-btn" style="width: 100%; text-align: left; padding: 15px;" onclick="selectPlate('9.256.368')">
+                        <strong>9.256.368</strong> - LCP Proximal Tibia Plate<br>
+                        <small style="color: #ddd;">180mm × 4mm | 10 otvorů</small>
+                    </button>
+                    <button class="modal-btn" style="width: 100%; text-align: left; padding: 15px;" onclick="selectPlate('9.256.380')">
+                        <strong>9.256.380</strong> - Custom Plate 80mm (PNG)<br>
+                        <small style="color: #ddd;">80mm × 5mm | Rhino 3D model</small>
+                    </button>
+                    <hr style="margin: 10px 0; border: none; border-top: 1px solid #555;">
+                    <button class="modal-btn" style="width: 100%; padding: 15px; background: #28a745; text-align: center;" onclick="showUploadPlateModal()">
+                        📤 Nahrát vlastní PNG dlahu
+                    </button>
+                </div>
+                <button class="modal-btn" style="margin-top: 10px; background: #dc3545;" onclick="hidePlateModal()">✖ Zrušit</button>
+            </div>
+        </div>
+
+        <!-- Modální okno pro nahrání PNG dlahy -->
+        <div id="uploadPlateModal" class="modal">
+            <div class="modal-content">
+                <h2>📤 Nahrát vlastní PNG dlahu</h2>
+                <p>Nahrajte obrázek dlahy z Rhina (pohled z boku, měřítko 10px = 1mm)</p>
+                
+                <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 12px;">
+                    <strong>📋 Instrukce pro export z Rhina:</strong><br>
+                    1. Nastav pohled <strong>z boku</strong> (Side view)<br>
+                    2. ViewCaptureToFile → PNG<br>
+                    3. <strong>Měřítko: 10 pixelů = 1 milimetr</strong><br>
+                    4. Transparentní nebo bílé pozadí
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <input type="file" id="plateImageInput" accept="image/png" style="display: none;" onchange="handlePlateImageUpload(event)">
+                    <button class="modal-btn" onclick="document.getElementById('plateImageInput').click()" style="width: 100%;">
+                        🖼️ Vybrat PNG soubor
+                    </button>
+                    <div id="uploadPreview" style="margin-top: 10px; text-align: center;"></div>
+                </div>
+                
+                <div style="margin: 10px 0;">
+                    <label style="display: block; margin-bottom: 5px;">Kód dlahy:</label>
+                    <input type="text" id="uploadPlateCode" placeholder="např. 9.256.XXX" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                </div>
+                
+                <div style="margin: 10px 0;">
+                    <label style="display: block; margin-bottom: 5px;">Název:</label>
+                    <input type="text" id="uploadPlateName" placeholder="např. Custom Plate" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin: 10px 0;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px;">Délka (mm): <small style="color: #888;">automaticky z PNG</small></label>
+                        <input type="number" id="uploadPlateLength" readonly style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; background: #f5f5f5;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px;">Tloušťka (mm): <small style="color: #888;">automaticky z PNG</small></label>
+                        <input type="number" id="uploadPlateWidth" readonly style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; background: #f5f5f5;">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="modal-btn" style="flex: 1; background: #28a745;" onclick="confirmUploadPlate()">✅ Přidat dlahu</button>
+                    <button class="modal-btn" style="flex: 1; background: #dc3545;" onclick="hideUploadPlateModal()">✖ Zrušit</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="header">
+            <h1>📐 Měření úhlů na RTG snímcích</h1>
+            <p>Offline nástroj pro přesné měření úhlů - žádná data neopouštějí váš počítač</p>
+        </div>
+
+        <div class="controls">
+            <div class="file-input-wrapper">
+                <label for="fileInput" class="btn btn-primary">📁 Nahrát RTG snímek</label>
+                <input type="file" id="fileInput" accept="image/*,.dcm,.dicom">
+            </div>
+
+            <button class="btn btn-secondary" id="measureAngleBtn">∠ Měřit úhel</button>
+            <button class="btn btn-secondary" id="calibrateBtn">📏 Kalibrace</button>
+            <button class="btn btn-secondary" id="measureDistanceBtn" disabled>📏 Měřit vzdálenost</button>
+            <button class="btn btn-warning" id="osteotomyBtn">🔪 Osteotomie</button>
+            <button class="btn btn-success" id="insertPlateBtn">📋 Vložit dlahy</button>
+            <button class="btn btn-secondary" id="resetView">🔄 Reset zobrazení</button>
+            <button class="btn btn-primary" id="exportImage">💾 Export JPG</button>
+        </div>
+
+        <div id="statusBar" style="background: #e3f2fd; padding: 12px 20px; border-bottom: 2px solid #2196F3; font-size: 15px; font-weight: 500; color: #1565c0;">
+            ℹ️ Nahrajte RTG snímek ve formátu .jpg nebo .png
+        </div>
+
+        <div class="main-content">
+            <div class="canvas-area">
+                <div class="canvas-wrapper" id="canvasWrapper">
+                    <canvas id="canvas"></canvas>
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-zone-icon">📋</div>
+                        <h2>Přetáhněte RTG snímek sem</h2>
+                        <p>nebo klikněte na "Nahrát RTG snímek"</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <!-- 1. PRIORITA: Osteotomie -->
+                <div class="info-section" id="osteotomySection" style="display:none;">
+                    <h3>🔪 Osteotomie</h3>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display:block; margin-bottom:10px; font-weight:bold;">
+                            Rotace: <span id="wedgeTypeDisplay" style="color:#666;">-</span>
+                        </label>
+                        <input type="range" id="osteotomySlider" 
+                               min="-30" max="30" value="0" step="0.5"
+                               style="width:100%;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top:5px; font-size:11px; color:#888;">
+                            <span>-30°</span>
+                            <span>+30°</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top:10px; gap: 5px;">
+                            <button class="btn btn-secondary" style="padding:5px 10px; font-size:12px; flex: 1;" onclick="resetOsteotomyAngle()">⟲ Reset 0°</button>
+                            <button class="btn btn-primary" style="padding:5px 10px; font-size:12px; flex: 1;" onclick="togglePreviewMode()" id="previewBtn">
+                                👁️ <span id="previewBtnText">Před op.</span>
+                            </button>
+                            <div style="font-size:18px; font-weight:bold;">
+                                <span id="osteotomyAngleDisplay">0.0°</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger" style="width:100%; margin-top:10px;" onclick="cancelOsteotomy()">✖ Zrušit osteotomii</button>
+                </div>
+
+                <!-- 2. PRIORITA: Dlahy -->
+                <div class="info-section" id="platesSection" style="display:none;">
+                    <h3>📋 Vložené dlahy</h3>
+                    <div id="platesList"></div>
+                </div>
+
+                <!-- 3. PRIORITA: Úhly -->
+                <div class="info-section" id="measurementsSection" style="display:none;">
+                    <h3>📊 Naměřené úhly</h3>
+                    <div id="measurementsList"></div>
+                </div>
+
+                <!-- 4. PRIORITA: Vzdálenosti -->
+                <div class="info-section" id="distancesSection" style="display:none;">
+                    <h3>📐 Naměřené vzdálenosti</h3>
+                    <div id="distancesList"></div>
+                </div>
+
+                <!-- 5. PRIORITA: Kalibrace -->
+                <div class="info-section" id="calibrationSection" style="display:none;">
+                    <h3>📏 Kalibrace pro vzdálenosti</h3>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display:block; margin-bottom:5px; font-size:13px;">Vzdálenost mezi body (cm):</label>
+                        <input type="number" id="calibrationInput" 
+                               style="width:100%; padding:8px; border-radius:4px; border:1px solid #ccc;" 
+                               placeholder="např. 40" step="0.1" min="0.1">
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;" onclick="confirmCalibration()">✓ Potvrdit kalibraci</button>
+                    <div id="calibrationResult" style="margin-top: 10px; padding: 8px; background: #e8f5e9; border-radius: 4px; font-size: 13px; display: none;">
+                        <strong>✓ Kalibrace aktivní:</strong><br>
+                        <span id="calibrationValue"></span>
+                    </div>
+                </div>
+
+                <!-- 6. Body -->
+                <div class="info-section" id="pointsSection" style="display:none;">
+                    <h3>📍 Aktuální body</h3>
+                    <ul class="point-list" id="pointsList"></ul>
+                </div>
+
+                <!-- 7. Instrukce (dole) -->
+                <details class="info-section" style="margin-top: auto;">
+                    <summary style="cursor: pointer; font-weight: bold; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+                        📋 Instrukce
+                    </summary>
+                    <div class="instruction" style="margin-top: 10px;">
+                        <strong>Jak měřit úhel:</strong><br>
+                        1. Nahrajte RTG snímek<br>
+                        2. Klikněte na <strong>první bod</strong> (začátek ramene)<br>
+                        3. Klikněte na <strong>vrchol úhlu</strong> (střed)<br>
+                        4. Klikněte na <strong>třetí bod</strong> (konec ramene)<br>
+                        <br>
+                        <strong>Úprava bodů:</strong><br>
+                        • Klikněte na bod a táhněte pro přesun<br>
+                        • Úhel se automaticky přepočítá<br>
+                        <br>
+                        <strong>Ovládání:</strong><br>
+                        • Kolečko myši: zoom<br>
+                        • Pravé tlačítko: posun<br>
+                        • Ctrl + tažení: posun
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Globální proměnné
+        let canvas, ctx;
+        let image = null;
+        let points = [];
+        let measurements = [];
+        let scale = 1;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let dragStart = {x: 0, y: 0};
+        let measurementCounter = 1;
+        
+        // Pro přetahování bodů
+        let isDraggingPoint = false;
+        let draggedPoint = null;
+        let draggedMeasurementIndex = null;
+        let draggedPointIndex = null;
+        
+        // Pro limitování počtu měření
+        let maxMeasurements = null;
+        let measurementsActive = false;
+        
+        // Pro kalibraci a měření vzdáleností
+        let pixelsPerCm = null; // Kalibrace
+        let calibrationPoints = []; // 2 body pro kalibraci
+        let isCalibrating = false;
+        let distanceMeasurements = []; // Změřené vzdálenosti
+        let distancePoints = []; // Aktuální body pro měření vzdálenosti
+        let maxDistanceMeasurements = null;
+        let distanceMeasurementsActive = false;
+        let distanceMeasurementCounter = 1;
+        
+        // Pro osteotomii
+        let osteotomyMode = false;
+        let osteotomyPoints = []; // 4 body: [cutStart, cutEnd/hinge, ankle1, ankle2]
+        let osteotomyAngle = 0; // Úhel rotace (-30 až +30)
+        let savedOsteotomyAngle = 0; // Uložený chirurgův úhel
+        let isPreviewMode = false; // false = pooperační (rotovaná kost), true = předoperační (plánování)
+        let osteotomyPolygon = null; // Oříznutý obrázek
+        let osteotomyStep = 0; // 0=čekání, 1=linie řezu, 2=body kotníku
+        
+        // Pro dlahy
+        let plates = []; // Array všech vložených dlah
+        let currentPlate = null; // Aktuálně editovaná dlaha
+        let isDraggingPlate = false;
+        let isDraggingPlateRotation = false;
+        
+        // Pro touch eventy
+        let lastTouchDistance = 0;
+        let touchStartTime = 0;
+        let isTouchDragging = false;
+
+        // Inicializace
+        document.addEventListener('DOMContentLoaded', function() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            
+            // Nastavení velikosti canvasu
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Event listenery
+            document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+            document.getElementById('measureAngleBtn').addEventListener('click', handleMeasureAngleClick);
+            document.getElementById('calibrateBtn').addEventListener('click', startCalibration);
+            document.getElementById('measureDistanceBtn').addEventListener('click', startDistanceMeasurement);
+            document.getElementById('osteotomyBtn').addEventListener('click', startOsteotomyMode);
+            document.getElementById('insertPlateBtn').addEventListener('click', insertPlate);
+            document.getElementById('resetView').addEventListener('click', resetView);
+            document.getElementById('exportImage').addEventListener('click', exportToJPG);
+
+            // Canvas interakce
+            canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('wheel', handleWheel);
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+            
+            // Touch eventy
+            canvas.addEventListener('touchstart', handleTouchStart, {passive: false});
+            canvas.addEventListener('touchmove', handleTouchMove, {passive: false});
+            canvas.addEventListener('touchend', handleTouchEnd, {passive: false});
+
+            // Drag and drop
+            const canvasWrapper = document.getElementById('canvasWrapper');
+            canvasWrapper.addEventListener('dragover', handleDragOver);
+            canvasWrapper.addEventListener('drop', handleDrop);
+        });
+
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvasWrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+            draw();
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Detekce DICOM podle přípony nebo MIME typu
+            const isDicom = file.name.toLowerCase().endsWith('.dcm') || 
+                           file.name.toLowerCase().endsWith('.dicom') ||
+                           file.type === 'application/dicom';
+            
+            if (isDicom) {
+                loadDicomImage(file);
+            } else if (file.type.startsWith('image/')) {
+                loadImage(file);
+            } else {
+                alert('Nepodporovaný formát souboru! Použijte JPG, PNG nebo DICOM.');
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const file = e.dataTransfer.files[0];
+            if (!file) return;
+            
+            const isDicom = file.name.toLowerCase().endsWith('.dcm') || 
+                           file.name.toLowerCase().endsWith('.dicom') ||
+                           file.type === 'application/dicom';
+            
+            if (isDicom) {
+                loadDicomImage(file);
+            } else if (file.type.startsWith('image/')) {
+                loadImage(file);
+            } else {
+                alert('Nepodporovaný formát! Použijte JPG, PNG nebo DICOM.');
+            }
+        }
+        
+        // DICOM loader s automatickou kalibrací
+        function loadDicomImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = e.target.result;
+                
+                try {
+                    // Parse DICOM
+                    const parser = new daikon.Parser();
+                    const buf = new DataView(data);
+                    const dicomImage = parser.parse(buf);
+                    
+                    if (!dicomImage) {
+                        throw new Error('Nepodařilo se načíst DICOM soubor');
+                    }
+                    
+                    // Získat pixel data
+                    const imageData = daikon.Series.parseImage(dicomImage);
+                    if (!imageData) {
+                        throw new Error('DICOM neobsahuje obrazová data');
+                    }
+                    
+                    // Získat metadata
+                    const rows = dicomImage.getRows();
+                    const cols = dicomImage.getCols();
+                    const pixelSpacing = dicomImage.getPixelSpacing(); // [row spacing, col spacing] v mm
+                    const patientName = dicomImage.getPatientName();
+                    const patientID = dicomImage.getPatientID();
+                    const studyDate = dicomImage.getStudyDate();
+                    const modality = dicomImage.getModality();
+                    
+                    console.log('DICOM loaded:', {rows, cols, pixelSpacing, patientName, studyDate, modality});
+                    
+                    // Konverze pixel data na canvas
+                    const canvas = document.createElement('canvas');
+                    canvas.width = cols;
+                    canvas.height = rows;
+                    const ctx = canvas.getContext('2d');
+                    const imgData = ctx.createImageData(cols, rows);
+                    
+                    // Normalizace a konverze na grayscale
+                    const pixels = imageData.data;
+                    let min = Infinity, max = -Infinity;
+                    for (let i = 0; i < pixels.length; i++) {
+                        if (pixels[i] < min) min = pixels[i];
+                        if (pixels[i] > max) max = pixels[i];
+                    }
+                    
+                    const range = max - min;
+                    for (let i = 0; i < pixels.length; i++) {
+                        const normalized = ((pixels[i] - min) / range) * 255;
+                        const idx = i * 4;
+                        imgData.data[idx] = normalized;     // R
+                        imgData.data[idx + 1] = normalized; // G
+                        imgData.data[idx + 2] = normalized; // B
+                        imgData.data[idx + 3] = 255;        // A
+                    }
+                    
+                    ctx.putImageData(imgData, 0, 0);
+                    
+                    // Načíst jako Image
+                    image = new Image();
+                    image.onload = function() {
+                        // RESET všeho
+                        points = [];
+                        measurements = [];
+                        measurementCounter = 1;
+                        maxMeasurements = null;
+                        measurementsActive = false;
+                        
+                        calibrationPoints = [];
+                        isCalibrating = false;
+                        distanceMeasurements = [];
+                        distancePoints = [];
+                        maxDistanceMeasurements = null;
+                        distanceMeasurementsActive = false;
+                        distanceMeasurementCounter = 1;
+                        
+                        osteotomyMode = false;
+                        osteotomyPoints = [];
+                        osteotomyAngle = 0;
+                        osteotomyStep = 0;
+                        document.getElementById('osteotomySection').style.display = 'none';
+                        document.getElementById('osteotomySlider').value = 0;
+                        document.getElementById('osteotomyAngleDisplay').textContent = '0.0°';
+                        
+                        plates = [];
+                        currentPlate = null;
+                        
+                        updateMeasurementsList();
+                        updatePointsList();
+                        updateDistancesList();
+                        updatePlatesList();
+                        document.getElementById('calibrationSection').style.display = 'none';
+                        
+                        // AUTOMATICKÁ KALIBRACE z DICOM Pixel Spacing!
+                        if (pixelSpacing && pixelSpacing.length >= 2) {
+                            // Pixel Spacing je [row spacing, col spacing] v mm
+                            // Vezmeme průměr
+                            const spacingMm = (pixelSpacing[0] + pixelSpacing[1]) / 2;
+                            pixelsPerCm = 10 / spacingMm; // mm -> cm
+                            
+                            document.getElementById('measureDistanceBtn').disabled = false;
+                            
+                            // Zobrazit info o automatické kalibraci
+                            alert(`✅ DICOM načten!\n\n` +
+                                  `📏 Automatická kalibrace: ${spacingMm.toFixed(3)} mm/pixel\n` +
+                                  `📊 Rozměry: ${cols} × ${rows}px\n` +
+                                  `🏥 Modalita: ${modality || 'N/A'}\n` +
+                                  `📅 Datum: ${studyDate || 'N/A'}\n\n` +
+                                  `Kalibrace není potřeba - můžete začít měřit!`);
+                            
+                            updateStatusBar(`✅ DICOM načten | Automatická kalibrace: ${spacingMm.toFixed(3)}mm/px | ${modality || 'RTG'}`);
+                        } else {
+                            alert('⚠️ DICOM načten, ale neobsahuje Pixel Spacing.\n\nBude nutná manuální kalibrace.');
+                            updateStatusBar('⚠️ DICOM bez Pixel Spacing - proveďte manuální kalibraci');
+                        }
+                        
+                        resetView();
+                        document.getElementById('dropZone').classList.add('hidden');
+                        draw();
+                    };
+                    
+                    image.src = canvas.toDataURL();
+                    
+                } catch (error) {
+                    console.error('DICOM parse error:', error);
+                    alert(`Chyba při načítání DICOM:\n${error.message}\n\nZkuste jiný soubor nebo použijte JPG/PNG.`);
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                image = new Image();
+                image.onload = function() {
+                    // KOMPLETNÍ RESET všech funkcí při novém snímku
+                    
+                    // Reset úhlů
+                    points = [];
+                    measurements = [];
+                    measurementCounter = 1;
+                    maxMeasurements = null;
+                    measurementsActive = false;
+                    
+                    // Reset kalibrace a vzdáleností
+                    pixelsPerCm = null;
+                    calibrationPoints = [];
+                    isCalibrating = false;
+                    distanceMeasurements = [];
+                    distancePoints = [];
+                    maxDistanceMeasurements = null;
+                    distanceMeasurementsActive = false;
+                    distanceMeasurementCounter = 1;
+                    document.getElementById('measureDistanceBtn').disabled = true;
+                    
+                    // Reset osteotomie
+                    osteotomyMode = false;
+                    osteotomyPoints = [];
+                    osteotomyAngle = 0;
+                    osteotomyStep = 0;
+                    document.getElementById('osteotomySection').style.display = 'none';
+                    document.getElementById('osteotomySlider').value = 0;
+                    document.getElementById('osteotomyAngleDisplay').textContent = '0.0°';
+                    
+                    // Reset dlah
+                    plates = [];
+                    currentPlate = null;
+                    
+                    // Reset UI
+                    updateMeasurementsList();
+                    updatePointsList();
+                    updateDistancesList();
+                    document.getElementById('calibrationSection').style.display = 'none';
+                    
+                    resetView();
+                    document.getElementById('dropZone').classList.add('hidden');
+                    draw();
+                    
+                    updateStatusBar(getStatusMessage());
+                };
+                image.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleCanvasClick(e) {
+            if (!image) return;
+            
+            // Ignorovat click pokud probíhal drag
+            if (isDragging || isDraggingPoint || isTouchDragging) {
+                isDragging = false;
+                isDraggingPoint = false;
+                isTouchDragging = false;
+                return;
+            }
+            
+            const rect = canvas.getBoundingClientRect();
+            const clickX = (e.clientX - rect.left - offsetX) / scale;
+            const clickY = (e.clientY - rect.top - offsetY) / scale;
+
+            // OSTEOTOMIE - pokud je aktivní
+            if (osteotomyMode) {
+                osteotomyPoints.push({x: clickX, y: clickY});
+                
+                if (osteotomyPoints.length === 2) {
+                    // Máme linii řezu, čekáme na body okolo nohy
+                    osteotomyStep = 2;
+                } else if (osteotomyPoints.length === 5) {
+                    // Máme všechny body (5 bodů: cut1, cut2/hinge, ankle_right, heel, ankle_left)
+                    createOsteotomyPolygon();
+                }
+                
+                updateStatusBar(getStatusMessage());
+                draw();
+                return;
+            }
+
+            // KALIBRACE - pokud probíhá
+            if (isCalibrating) {
+                if (calibrationPoints.length < 2) {
+                    calibrationPoints.push({x: clickX, y: clickY});
+                    updateStatusBar(getStatusMessage());
+                    draw();
+                }
+                // Po 2 bodech již nepřidávat další body
+                return;
+            }
+
+            // MĚŘENÍ VZDÁLENOSTÍ - pokud je aktivní
+            if (distanceMeasurementsActive) {
+                distancePoints.push({x: clickX, y: clickY});
+                
+                if (distancePoints.length === 2) {
+                    const pixelDist = Math.sqrt(
+                        Math.pow(distancePoints[1].x - distancePoints[0].x, 2) +
+                        Math.pow(distancePoints[1].y - distancePoints[0].y, 2)
+                    );
+                    const cmDist = pixelDist / pixelsPerCm;
+                    
+                    distanceMeasurements.push({
+                        id: distanceMeasurementCounter++,
+                        points: [...distancePoints],
+                        distance: cmDist,
+                        visible: true // Pro zobrazení/skrytí
+                    });
+                    
+                    distancePoints = [];
+                    updateDistancesList(); // Aktualizovat seznam
+                    
+                    // Zkontrolovat limit
+                    if (distanceMeasurements.length >= maxDistanceMeasurements) {
+                        distanceMeasurementsActive = false;
+                    }
+                }
+                updateStatusBar(getStatusMessage());
+                draw();
+                return;
+            }
+            
+            // Pokud nejsou měření aktivní, neumožnit přidávat nové body
+            if (!measurementsActive) return;
+
+            // Zkontrolovat, jestli jsme klikli na existující bod z dokončených měření
+            const clickRadius = 15 / scale; // Tolerance pro kliknutí
+            
+            for (let mIdx = 0; mIdx < measurements.length; mIdx++) {
+                for (let pIdx = 0; pIdx < measurements[mIdx].points.length; pIdx++) {
+                    const point = measurements[mIdx].points[pIdx];
+                    const dist = Math.sqrt(
+                        Math.pow(point.x - clickX, 2) + 
+                        Math.pow(point.y - clickY, 2)
+                    );
+                    
+                    if (dist <= clickRadius) {
+                        // Našli jsme bod, který chceme upravit
+                        return; // Nedělat nic, přetahování se řeší v mousedown
+                    }
+                }
+            }
+
+            // Zkontrolovat aktuální body
+            for (let i = 0; i < points.length; i++) {
+                const point = points[i];
+                const dist = Math.sqrt(
+                    Math.pow(point.x - clickX, 2) + 
+                    Math.pow(point.y - clickY, 2)
+                );
+                
+                if (dist <= clickRadius) {
+                    return; // Nedělat nic
+                }
+            }
+
+            // Pokud jsme neklikli na existující bod, přidat nový
+            const x = clickX;
+            const y = clickY;
+
+            points.push({x, y});
+            
+            // Pokud máme 3 body, vypočítáme úhel
+            if (points.length === 3) {
+                const angle = calculateAngle(points[0], points[1], points[2]);
+                
+                // Výchozí poloměr kruhu (proporcionální k vzdálenosti bodů)
+                const dist01 = Math.sqrt(
+                    Math.pow(points[1].x - points[0].x, 2) + 
+                    Math.pow(points[1].y - points[0].y, 2)
+                );
+                const defaultRadius = dist01 * 0.08; // 8% vzdálenosti kyčel-koleno
+                
+                measurements.push({
+                    id: measurementCounter++,
+                    angle: angle,
+                    points: [...points],
+                    isFlipped: false,
+                    visible: true, // Pro zobrazení/skrytí
+                    circle: {
+                        center: {x: points[0].x, y: points[0].y},
+                        radius: defaultRadius,
+                        handleAngle: 0 // Úhel kde je handle (v radiánech)
+                    }
+                });
+                points = [];
+                updateMeasurementsList();
+                checkMeasurementLimit();
+            }
+
+            updatePointsList();
+            updateStatusBar(getStatusMessage());
+            draw();
+        }
+
+        function calculateAngle(p1, p2, p3) {
+            // p2 je vrchol úhlu
+            const vector1 = {
+                x: p1.x - p2.x,
+                y: p1.y - p2.y
+            };
+            const vector2 = {
+                x: p3.x - p2.x,
+                y: p3.y - p2.y
+            };
+
+            // Dot product a magnitudes
+            const dot = vector1.x * vector2.x + vector1.y * vector2.y;
+            const mag1 = Math.sqrt(vector1.x * vector1.x + vector1.y * vector1.y);
+            const mag2 = Math.sqrt(vector2.x * vector2.x + vector2.y * vector2.y);
+
+            // Úhel v radiánech a převod na stupně
+            const angleRad = Math.acos(dot / (mag1 * mag2));
+            const angleDeg = angleRad * (180 / Math.PI);
+
+            return angleDeg;
+        }
+
+        function handleWheel(e) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            zoom(delta, e.clientX - canvas.getBoundingClientRect().left, 
+                       e.clientY - canvas.getBoundingClientRect().top);
+        }
+
+        function zoom(factor, centerX, centerY) {
+            const rect = canvas.getBoundingClientRect();
+            centerX = centerX || canvas.width / 2;
+            centerY = centerY || canvas.height / 2;
+
+            const oldScale = scale;
+            scale *= factor;
+            scale = Math.max(0.1, Math.min(scale, 10));
+
+            // Upravit offset pro zoom k bodu
+            offsetX = centerX - (centerX - offsetX) * (scale / oldScale);
+            offsetY = centerY - (centerY - offsetY) * (scale / oldScale);
+
+            draw();
+        }
+
+        function handleMouseDown(e) {
+            if (!image) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left - offsetX) / scale;
+            const mouseY = (e.clientY - rect.top - offsetY) / scale;
+            const clickRadius = 15 / scale;
+
+            // PRIORITA: Zkontrolovat dlahy (pokud existují)
+            if (currentPlate) {
+                // Transformovat myš do souřadnic dlahy
+                const dx = mouseX - currentPlate.x;
+                const dy = mouseY - currentPlate.y;
+                const cos = Math.cos(-currentPlate.rotation);
+                const sin = Math.sin(-currentPlate.rotation);
+                const localX = dx * cos - dy * sin;
+                const localY = dx * sin + dy * cos;
+                
+                // Zkontrolovat rotační bod
+                const rotationRadius = Math.max(currentPlate.width, currentPlate.height) / 2 + 20 / scale;
+                const handleX = Math.cos(0) * rotationRadius;
+                const handleY = Math.sin(0) * rotationRadius;
+                const distToHandle = Math.sqrt(Math.pow(localX - handleX, 2) + Math.pow(localY - handleY, 2));
+                
+                if (distToHandle <= clickRadius) {
+                    isDraggingPlateRotation = true;
+                    canvas.style.cursor = 'move';
+                    return;
+                }
+                
+                // Zkontrolovat křížek ve středu (posuv)
+                if (Math.abs(localX) <= 15 / scale && Math.abs(localY) <= 15 / scale) {
+                    isDraggingPlate = true;
+                    canvas.style.cursor = 'move';
+                    return;
+                }
+            }
+
+            // NEJDŘÍV zkontrolovat handle body kruhů (mají prioritu)
+            for (let mIdx = 0; mIdx < measurements.length; mIdx++) {
+                const m = measurements[mIdx];
+                if (!m.visible) continue; // Přeskočit skrytá měření
+                
+                if (m.circle) {
+                    const handleX = m.circle.center.x + Math.cos(m.circle.handleAngle) * m.circle.radius;
+                    const handleY = m.circle.center.y + Math.sin(m.circle.handleAngle) * m.circle.radius;
+                    const dist = Math.sqrt(
+                        Math.pow(handleX - mouseX, 2) + 
+                        Math.pow(handleY - mouseY, 2)
+                    );
+                    
+                    if (dist <= clickRadius) {
+                        isDraggingPoint = true;
+                        draggedMeasurementIndex = mIdx;
+                        draggedPointIndex = -2; // -2 znamená handle kruhu
+                        canvas.style.cursor = 'move';
+                        return;
+                    }
+                }
+            }
+
+            // Nejdřív zkontrolovat body z dokončených měření
+            for (let mIdx = 0; mIdx < measurements.length; mIdx++) {
+                if (!measurements[mIdx].visible) continue; // Přeskočit skrytá měření
+                
+                for (let pIdx = 0; pIdx < measurements[mIdx].points.length; pIdx++) {
+                    const point = measurements[mIdx].points[pIdx];
+                    const dist = Math.sqrt(
+                        Math.pow(point.x - mouseX, 2) + 
+                        Math.pow(point.y - mouseY, 2)
+                    );
+                    
+                    if (dist <= clickRadius) {
+                        isDraggingPoint = true;
+                        draggedMeasurementIndex = mIdx;
+                        draggedPointIndex = pIdx;
+                        canvas.style.cursor = 'move';
+                        return;
+                    }
+                }
+            }
+
+            // Zkontrolovat aktuální body (ještě nedokončené měření)
+            for (let i = 0; i < points.length; i++) {
+                const point = points[i];
+                const dist = Math.sqrt(
+                    Math.pow(point.x - mouseX, 2) + 
+                    Math.pow(point.y - mouseY, 2)
+                );
+                
+                if (dist <= clickRadius) {
+                    isDraggingPoint = true;
+                    draggedMeasurementIndex = -1; // -1 znamená aktuální body
+                    draggedPointIndex = i;
+                    canvas.style.cursor = 'move';
+                    return;
+                }
+            }
+
+            // Zkontrolovat body z dokončených vzdáleností
+            for (let dIdx = 0; dIdx < distanceMeasurements.length; dIdx++) {
+                if (!distanceMeasurements[dIdx].visible) continue; // Přeskočit skryté vzdálenosti
+                
+                for (let pIdx = 0; pIdx < distanceMeasurements[dIdx].points.length; pIdx++) {
+                    const point = distanceMeasurements[dIdx].points[pIdx];
+                    const dist = Math.sqrt(
+                        Math.pow(point.x - mouseX, 2) + 
+                        Math.pow(point.y - mouseY, 2)
+                    );
+                    
+                    if (dist <= clickRadius) {
+                        isDraggingPoint = true;
+                        draggedMeasurementIndex = -3; // -3 znamená vzdálenostní měření
+                        draggedPointIndex = dIdx * 10 + pIdx; // zakódovat index
+                        canvas.style.cursor = 'move';
+                        return;
+                    }
+                }
+            }
+
+            // Zkontrolovat body osteotomie
+            if (osteotomyPoints.length === 5) {
+                for (let i = 0; i < osteotomyPoints.length; i++) {
+                    const point = osteotomyPoints[i];
+                    const dist = Math.sqrt(
+                        Math.pow(point.x - mouseX, 2) + 
+                        Math.pow(point.y - mouseY, 2)
+                    );
+                    
+                    if (dist <= clickRadius) {
+                        isDraggingPoint = true;
+                        draggedMeasurementIndex = -4; // -4 znamená osteotomy bod
+                        draggedPointIndex = i;
+                        canvas.style.cursor = 'move';
+                        return;
+                    }
+                }
+            }
+
+            // Pokud jsme neklikli na bod, začít pan
+            if (e.button === 2 || (e.button === 0 && e.ctrlKey)) {
+                isDragging = true;
+                dragStart = {
+                    x: e.clientX - offsetX,
+                    y: e.clientY - offsetY
+                };
+                canvas.style.cursor = 'grabbing';
+            }
+        }
+
+        function handleMouseMove(e) {
+            if (!image) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left - offsetX) / scale;
+            const mouseY = (e.clientY - rect.top - offsetY) / scale;
+
+            // Zpracování drag dlahy
+            if (isDraggingPlate && currentPlate) {
+                currentPlate.x = mouseX;
+                currentPlate.y = mouseY;
+                draw();
+                return;
+            }
+            
+            if (isDraggingPlateRotation && currentPlate) {
+                // Vypočítat úhel od středu dlahy k myši
+                const dx = mouseX - currentPlate.x;
+                const dy = mouseY - currentPlate.y;
+                currentPlate.rotation = Math.atan2(dy, dx);
+                draw();
+                return;
+            }
+
+            if (isDraggingPoint) {
+                // Přetahování bodu
+                if (draggedMeasurementIndex === -1) {
+                    // Přetahování aktuálního bodu
+                    points[draggedPointIndex].x = mouseX;
+                    points[draggedPointIndex].y = mouseY;
+                } else if (draggedPointIndex === -2) {
+                    // Přetahování handle bodu kruhu - mění poloměr
+                    const m = measurements[draggedMeasurementIndex];
+                    const newRadius = Math.sqrt(
+                        Math.pow(mouseX - m.circle.center.x, 2) + 
+                        Math.pow(mouseY - m.circle.center.y, 2)
+                    );
+                    m.circle.radius = Math.max(5, newRadius); // Min 5px
+                    
+                    // Aktualizovat úhel handle
+                    m.circle.handleAngle = Math.atan2(
+                        mouseY - m.circle.center.y,
+                        mouseX - m.circle.center.x
+                    );
+                } else if (draggedMeasurementIndex === -3) {
+                    // Přetahování bodu ze vzdálenostního měření
+                    const dIdx = Math.floor(draggedPointIndex / 10);
+                    const pIdx = draggedPointIndex % 10;
+                    distanceMeasurements[dIdx].points[pIdx].x = mouseX;
+                    distanceMeasurements[dIdx].points[pIdx].y = mouseY;
+                    
+                    // Přepočítat vzdálenost
+                    const pts = distanceMeasurements[dIdx].points;
+                    const pixelDist = Math.sqrt(
+                        Math.pow(pts[1].x - pts[0].x, 2) +
+                        Math.pow(pts[1].y - pts[0].y, 2)
+                    );
+                    distanceMeasurements[dIdx].distance = pixelDist / pixelsPerCm;
+                } else if (draggedMeasurementIndex === -4) {
+                    // Přetahování bodu osteotomie
+                    osteotomyPoints[draggedPointIndex].x = mouseX;
+                    osteotomyPoints[draggedPointIndex].y = mouseY;
+                } else if (draggedPointIndex === 0) {
+                    // Přetahování prvního bodu (kyčel) - posunout i střed kruhu
+                    const m = measurements[draggedMeasurementIndex];
+                    const dx = mouseX - m.points[0].x;
+                    const dy = mouseY - m.points[0].y;
+                    
+                    m.points[0].x = mouseX;
+                    m.points[0].y = mouseY;
+                    
+                    // Posunout i střed kruhu
+                    if (m.circle) {
+                        m.circle.center.x += dx;
+                        m.circle.center.y += dy;
+                    }
+                    
+                    // Přepočítat úhel
+                    const pts = m.points;
+                    m.angle = calculateAngle(pts[0], pts[1], pts[2]);
+                    updateMeasurementsList();
+                } else {
+                    // Přetahování jiného bodu z dokončeného měření
+                    measurements[draggedMeasurementIndex].points[draggedPointIndex].x = mouseX;
+                    measurements[draggedMeasurementIndex].points[draggedPointIndex].y = mouseY;
+                    
+                    // Přepočítat úhel
+                    const pts = measurements[draggedMeasurementIndex].points;
+                    measurements[draggedMeasurementIndex].angle = calculateAngle(pts[0], pts[1], pts[2]);
+                    updateMeasurementsList();
+                }
+                draw();
+                return;
+            }
+
+            if (isDragging) {
+                // Pan celého zobrazení
+                offsetX = e.clientX - dragStart.x;
+                offsetY = e.clientY - dragStart.y;
+                draw();
+                return;
+            }
+
+            // Změna kurzoru při najetí na bod
+            const clickRadius = 15 / scale;
+            let hoveredPoint = false;
+
+            // Zkontrolovat dokončená měření
+            for (let mIdx = 0; mIdx < measurements.length; mIdx++) {
+                for (let pIdx = 0; pIdx < measurements[mIdx].points.length; pIdx++) {
+                    const point = measurements[mIdx].points[pIdx];
+                    const dist = Math.sqrt(
+                        Math.pow(point.x - mouseX, 2) + 
+                        Math.pow(point.y - mouseY, 2)
+                    );
+                    
+                    if (dist <= clickRadius) {
+                        hoveredPoint = true;
+                        break;
+                    }
+                }
+                if (hoveredPoint) break;
+            }
+
+            // Zkontrolovat aktuální body
+            if (!hoveredPoint) {
+                for (let i = 0; i < points.length; i++) {
+                    const point = points[i];
+                    const dist = Math.sqrt(
+                        Math.pow(point.x - mouseX, 2) + 
+                        Math.pow(point.y - mouseY, 2)
+                    );
+                    
+                    if (dist <= clickRadius) {
+                        hoveredPoint = true;
+                        break;
+                    }
+                }
+            }
+
+            canvas.style.cursor = hoveredPoint ? 'pointer' : 'crosshair';
+        }
+
+        function handleMouseUp() {
+            isDragging = false;
+            isDraggingPoint = false;
+            isDraggingPlate = false;
+            isDraggingPlateRotation = false;
+            draggedMeasurementIndex = null;
+            draggedPointIndex = null;
+            canvas.style.cursor = 'crosshair';
+        }
+
+        function resetView() {
+            if (!image) return;
+            
+            scale = Math.min(
+                canvas.width / image.width,
+                canvas.height / image.height
+            ) * 0.9;
+            
+            offsetX = (canvas.width - image.width * scale) / 2;
+            offsetY = (canvas.height - image.height * scale) / 2;
+            
+            draw();
+        }
+
+        function clearAnglePoints() {
+            points = [];
+            measurements = [];
+            measurementCounter = 1;
+            maxMeasurements = null;
+            measurementsActive = false;
+            updatePointsList();
+            updateMeasurementsList();
+            updateStatusBar(getStatusMessage());
+            draw();
+            
+            // NEOTEVÍRAT modal - jen smazat
+        }
+
+        function clearDistancePoints() {
+            distanceMeasurements = [];
+            distancePoints = [];
+            maxDistanceMeasurements = null;
+            distanceMeasurementsActive = false;
+            distanceMeasurementCounter = 1;
+            draw();
+        }
+
+        function handleMeasureAngleClick() {
+            if (!image) {
+                alert('Nejprve nahrajte RTG snímek!');
+                return;
+            }
+            
+            // Pokud ještě nebylo žádné měření, zobraz modal
+            if (measurements.length === 0) {
+                showMeasurementModal();
+            } else {
+                // Už jsou měření → rovnou přidej 1 nové
+                maxMeasurements = null; // Bez limitu
+                measurementsActive = true;
+                updateStatusBar(getStatusMessage());
+            }
+        }
+
+        function showMeasurementModal() {
+            document.getElementById('measurementModal').style.display = 'block';
+        }
+
+        function hideMeasurementModal() {
+            document.getElementById('measurementModal').style.display = 'none';
+        }
+
+        function startMeasurements(count) {
+            maxMeasurements = count;
+            measurementsActive = true;
+            hideMeasurementModal();
+            updateMeasurementsList();
+            updateStatusBar(getStatusMessage());
+        }
+
+        function startCalibration() {
+            if (!image) {
+                alert('Nejprve nahrajte RTG snímek!');
+                return;
+            }
+            
+            isCalibrating = true;
+            calibrationPoints = [];
+            measurementsActive = false;
+            distanceMeasurementsActive = false;
+            
+            // Zobrazit kalibrační sekci
+            document.getElementById('calibrationSection').style.display = 'block';
+            document.getElementById('calibrationInput').value = '';
+            updateStatusBar(getStatusMessage());
+            draw();
+        }
+
+        function confirmCalibration() {
+            if (calibrationPoints.length !== 2) {
+                alert('Nejprve klikněte na 2 body na pravítku!');
+                return;
+            }
+            
+            const input = document.getElementById('calibrationInput');
+            const distance = input.value;
+            
+            if (distance && !isNaN(distance) && parseFloat(distance) > 0) {
+                const realDistance = parseFloat(distance);
+                const pixelDistance = Math.sqrt(
+                    Math.pow(calibrationPoints[1].x - calibrationPoints[0].x, 2) +
+                    Math.pow(calibrationPoints[1].y - calibrationPoints[0].y, 2)
+                );
+                pixelsPerCm = pixelDistance / realDistance;
+                document.getElementById('measureDistanceBtn').disabled = false;
+                
+                // PŘEPOČÍTAT všechny existující vzdálenosti podle nové kalibrace
+                distanceMeasurements.forEach((d) => {
+                    const pixelDist = Math.sqrt(
+                        Math.pow(d.points[1].x - d.points[0].x, 2) +
+                        Math.pow(d.points[1].y - d.points[0].y, 2)
+                    );
+                    d.distance = pixelDist / pixelsPerCm;
+                });
+                
+                // PŘEPOČÍTAT všechny vložené dlahy podle nové kalibrace
+                plates.forEach((plate) => {
+                    const lengthInCm = plate.realLength / 10; // mm -> cm
+                    const widthInCm = 4 / 10; // 4mm -> cm
+                    plate.width = lengthInCm * pixelsPerCm;
+                    plate.height = widthInCm * pixelsPerCm;
+                });
+                
+                // Aktualizovat zobrazení vzdáleností
+                updateDistancesList();
+                
+                // Zobrazit výsledek kalibrace pod kolonkou (místo popup)
+                document.getElementById('calibrationResult').style.display = 'block';
+                document.getElementById('calibrationValue').textContent = 
+                    `${pixelsPerCm.toFixed(2)} pixelů = 1 cm`;
+            } else {
+                alert('Zadejte platnou hodnotu!');
+                return;
+            }
+            isCalibrating = false;
+            updateStatusBar(getStatusMessage());
+            draw();
+        }
+
+        function finishCalibration() {
+            // Tato funkce už není potřeba, ale nechám pro kompatibilitu
+            // Nyní se používá confirmCalibration
+        }
+
+        function startDistanceMeasurement() {
+            if (!pixelsPerCm) {
+                alert('Nejprve proveďte kalibraci!');
+                return;
+            }
+            
+            // Pokud ještě nebylo žádné měření vzdálenosti, zobraz modal
+            if (distanceMeasurements.length === 0) {
+                showDistanceMeasurementModal();
+            } else {
+                // Už jsou měření → rovnou přidej 1 nové
+                maxDistanceMeasurements = null; // Bez limitu
+                distanceMeasurementsActive = true;
+                measurementsActive = false;
+                distancePoints = [];
+                updateStatusBar(getStatusMessage());
+            }
+        }
+
+        function showDistanceMeasurementModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Měření vzdáleností</h2>
+                    <p>Kolik vzdáleností chcete změřit?</p>
+                    <div class="modal-buttons">
+                        <button class="modal-btn" onclick="startDistanceMeasurements(1); this.closest('.modal').remove();">1 měření</button>
+                        <button class="modal-btn" onclick="startDistanceMeasurements(2); this.closest('.modal').remove();">2 měření</button>
+                        <button class="modal-btn" onclick="startDistanceMeasurements(3); this.closest('.modal').remove();">3 měření</button>
+                        <button class="modal-btn" onclick="startDistanceMeasurements(4); this.closest('.modal').remove();">4 měření</button>
+                        <button class="modal-btn" onclick="startDistanceMeasurements(5); this.closest('.modal').remove();">5 měření</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function startDistanceMeasurements(count) {
+            maxDistanceMeasurements = count;
+            distanceMeasurementsActive = true;
+            measurementsActive = false;
+            distancePoints = [];
+            updateStatusBar(getStatusMessage());
+        }
+
+        function startOsteotomyMode() {
+            if (!image) {
+                alert('Nejprve nahrajte RTG snímek!');
+                return;
+            }
+            
+            osteotomyMode = true;
+            osteotomyPoints = [];
+            osteotomyStep = 1;
+            measurementsActive = false;
+            distanceMeasurementsActive = false;
+            isCalibrating = false;
+            
+            updateStatusBar(getStatusMessage());
+            draw();
+        }
+
+        function switchAngle(measurementIndex) {
+            measurements[measurementIndex].isFlipped = !measurements[measurementIndex].isFlipped;
+            updateMeasurementsList();
+            draw();
+        }
+
+        function deleteMeasurement(measurementIndex) {
+            measurements.splice(measurementIndex, 1);
+            updateMeasurementsList();
+            draw();
+        }
+
+        function toggleVisibility(measurementIndex) {
+            measurements[measurementIndex].visible = !measurements[measurementIndex].visible;
+            updateMeasurementsList();
+            draw();
+        }
+
+        function toggleDistanceVisibility(distanceIndex) {
+            distanceMeasurements[distanceIndex].visible = !distanceMeasurements[distanceIndex].visible;
+            updateDistancesList();
+            draw();
+        }
+
+        function deleteDistance(distanceIndex) {
+            distanceMeasurements.splice(distanceIndex, 1);
+            updateDistancesList();
+            draw();
+        }
+
+        function updateDistancesList() {
+            const list = document.getElementById('distancesList');
+            const section = document.getElementById('distancesSection');
+            
+            if (distanceMeasurements.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            list.innerHTML = '';
+
+            // Zobrazit jednotlivé vzdálenosti
+            distanceMeasurements.forEach((d, idx) => {
+                const div = document.createElement('div');
+                div.className = 'measurement-item';
+                
+                const visibilityIcon = d.visible ? '👁️' : '🚫';
+                const visibilityText = d.visible ? 'Skrýt' : 'Zobrazit';
+                
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: bold; font-size: 16px;">Vzdálenost #${d.id} - ${d.distance.toFixed(1)} cm</span>
+                        <button class="delete-btn" onclick="deleteDistance(${idx})" title="Smazat vzdálenost">🗑️</button>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="switch-btn" onclick="toggleDistanceVisibility(${idx})">${visibilityIcon} ${visibilityText}</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function exportToJPG() {
+            if (!image) {
+                alert('Nejprve nahrajte RTG snímek!');
+                return;
+            }
+
+            // Vytvořit canvas s původními rozměry obrázku
+            const exportCanvas = document.createElement('canvas');
+            const exportCtx = exportCanvas.getContext('2d');
+            
+            // Nastavit velikost podle PŮVODNÍHO obrázku
+            exportCanvas.width = image.width;
+            exportCanvas.height = image.height;
+            
+            // Nakreslit bílé pozadí (pro JPG)
+            exportCtx.fillStyle = '#FFFFFF';
+            exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+            
+            // Nakreslit obrázek v plném rozlišení
+            exportCtx.drawImage(image, 0, 0);
+            
+            // Exportovat osteotomii pokud je aktivní
+            if (osteotomyPoints.length === 5) {
+                exportOsteotomyOnContext(exportCtx);
+            }
+            
+            // Kreslit dokončená měření s transformací pokud je osteotomie
+            measurements.forEach((m) => {
+                if (m.visible) {
+                    let exportPoints = [...m.points];
+                    let exportAngle = m.angle;
+                    
+                    // Transformovat body pokud jsou v osteotomy polygonu
+                    if (osteotomyPoints.length === 5 && osteotomyAngle !== 0) {
+                        const hinge = osteotomyPoints[1];
+                        const angleRad = (osteotomyAngle * Math.PI) / 180;
+                        
+                        exportPoints = m.points.map(pt => {
+                            if (isPointInPolygon(pt, osteotomyPoints)) {
+                                return rotatePointAround(pt, hinge, angleRad);
+                            }
+                            return pt;
+                        });
+                        
+                        exportAngle = calculateAngle(exportPoints[0], exportPoints[1], exportPoints[2]);
+                    }
+                    
+                    drawMeasurementOnExportContext(exportCtx, exportPoints, exportAngle, `#${m.id}`, m.isFlipped, 1);
+                }
+            });
+            
+            // Kreslit vzdálenosti s transformací
+            distanceMeasurements.forEach((d) => {
+                if (d.visible) {
+                    let exportDistPoints = [...d.points];
+                    let exportDist = d.distance;
+                    
+                    // Transformovat body pokud jsou v osteotomy polygonu
+                    if (osteotomyPoints.length === 5 && osteotomyAngle !== 0) {
+                        const hinge = osteotomyPoints[1];
+                        const angleRad = (osteotomyAngle * Math.PI) / 180;
+                        
+                        exportDistPoints = d.points.map(pt => {
+                            if (isPointInPolygon(pt, osteotomyPoints)) {
+                                return rotatePointAround(pt, hinge, angleRad);
+                            }
+                            return pt;
+                        });
+                        
+                        const pixelDist = Math.sqrt(
+                            Math.pow(exportDistPoints[1].x - exportDistPoints[0].x, 2) +
+                            Math.pow(exportDistPoints[1].y - exportDistPoints[0].y, 2)
+                        );
+                        exportDist = pixelDist / pixelsPerCm;
+                    }
+                    
+                    const tempD = {points: exportDistPoints, distance: exportDist};
+                    drawDistanceMeasurementOnExportContext(exportCtx, tempD);
+                }
+            });
+            
+            // Kreslit aktuální body
+            if (points.length > 0) {
+                drawCurrentPointsOnExportContext(exportCtx, 1);
+            }
+            
+            // Exportovat dlahy
+            if (plates.length > 0) {
+                plates.forEach(plate => {
+                    // Přeskočit neviditelné dlahy
+                    if (plate.visible === false) return;
+                    
+                    exportCtx.save();
+                    
+                    exportCtx.translate(plate.x, plate.y);
+                    exportCtx.rotate(plate.rotation);
+                    
+                    const plateWidth = plate.width * plate.scale;
+                    const plateHeight = plate.height * plate.scale;
+                    
+                    // Pro PNG obrázky
+                    if (plate.type === 'image' && plate.image) {
+                        exportCtx.drawImage(
+                            plate.image,
+                            -plateWidth / 2,
+                            -plateHeight / 2,
+                            plateWidth,
+                            plateHeight
+                        );
+                    } else {
+                        // Pro generované dlahy
+                        // Modrá výplň
+                        exportCtx.fillStyle = 'rgba(0, 150, 255, 0.6)';
+                        exportCtx.fillRect(-plateWidth / 2, -plateHeight / 2, plateWidth, plateHeight);
+                        
+                        // Obrys
+                        exportCtx.strokeStyle = 'rgba(0, 100, 200, 0.9)';
+                        exportCtx.lineWidth = 3;
+                        exportCtx.strokeRect(-plateWidth / 2, -plateHeight / 2, plateWidth, plateHeight);
+                        
+                        // Otvory - jen pokud existují
+                        if (plate.holePositions && plate.holePositions.length > 0) {
+                            const holeRadius = 1.2 * pixelsPerCm / 10;
+                            
+                            exportCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                            exportCtx.strokeStyle = 'rgba(0, 100, 200, 0.9)';
+                            exportCtx.lineWidth = 1.5;
+                            
+                            plate.holePositions.forEach(pos => {
+                                const xPos = (pos / plate.realLength) * plateWidth - plateWidth / 2;
+                                exportCtx.beginPath();
+                                exportCtx.arc(xPos, 0, holeRadius, 0, Math.PI * 2);
+                                exportCtx.fill();
+                                exportCtx.stroke();
+                            });
+                        }
+                    }
+                    
+                    exportCtx.restore();
+                });
+            }
+            
+            // Exportovat jako JPG
+            exportCanvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                link.download = `rtg-mereni-${timestamp}.jpg`;
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+            }, 'image/jpeg', 0.95);
+        }
+
+        function exportOsteotomyOnContext(ctx) {
+            // PREVIEW REŽIM: Exportovat červený klín
+            if (isPreviewMode && savedOsteotomyAngle !== 0 && osteotomyPoints.length === 5) {
+                const hinge = osteotomyPoints[1];
+                const angleRad = (savedOsteotomyAngle * Math.PI) / 180;
+                
+                const rotatePoint = (p, center, angle) => {
+                    const cos = Math.cos(angle);
+                    const sin = Math.sin(angle);
+                    const dx = p.x - center.x;
+                    const dy = p.y - center.y;
+                    return {
+                        x: center.x + dx * cos - dy * sin,
+                        y: center.y + dx * sin + dy * cos
+                    };
+                };
+                
+                const cutStartRot = rotatePoint(osteotomyPoints[0], hinge, angleRad);
+                const isRotatingUp = cutStartRot.y < osteotomyPoints[0].y;
+                
+                // CLOSE WEDGE: Červený klín v předoperačním stavu
+                if (isRotatingUp) {
+                    const cutStartRotInverse = rotatePoint(osteotomyPoints[0], hinge, -angleRad);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(osteotomyPoints[0].x, osteotomyPoints[0].y);
+                    ctx.lineTo(hinge.x, hinge.y);
+                    ctx.lineTo(cutStartRotInverse.x, cutStartRotInverse.y);
+                    ctx.closePath();
+                    
+                    // Červená výplň
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.35)';
+                    ctx.fill();
+                    
+                    // Červený obrys
+                    ctx.strokeStyle = '#ff0000';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    
+                    // Text s úhlem
+                    const midX = (osteotomyPoints[0].x + hinge.x + cutStartRotInverse.x) / 3;
+                    const midY = (osteotomyPoints[0].y + hinge.y + cutStartRotInverse.y) / 3;
+                    ctx.save();
+                    ctx.translate(midX, midY);
+                    ctx.font = 'bold 24px Arial';
+                    ctx.fillStyle = '#ff0000';
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 5;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const angleText = `${Math.abs(savedOsteotomyAngle).toFixed(1)}°`;
+                    ctx.strokeText(angleText, 0, 0);
+                    ctx.fillText(angleText, 0, 0);
+                    ctx.restore();
+                }
+                
+                // Oranžový obrys segmentu
+                ctx.beginPath();
+                ctx.moveTo(osteotomyPoints[0].x, osteotomyPoints[0].y);
+                ctx.lineTo(osteotomyPoints[1].x, osteotomyPoints[1].y);
+                ctx.lineTo(osteotomyPoints[2].x, osteotomyPoints[2].y);
+                ctx.lineTo(osteotomyPoints[3].x, osteotomyPoints[3].y);
+                ctx.lineTo(osteotomyPoints[4].x, osteotomyPoints[4].y);
+                ctx.closePath();
+                ctx.strokeStyle = '#ffaa00';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([15, 8]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                return; // Skončit - neexportovat rotovanou kost
+            }
+            
+            // NORMÁLNÍ REŽIM: Exportovat rotovanou kost
+            if (osteotomyAngle === 0) return; // Nic neexportovat pokud není rotace
+            
+            const hinge = osteotomyPoints[1];
+            const angleRad = (osteotomyAngle * Math.PI) / 180;
+            
+            // Rotovat body
+            const rotatePoint = (p, center, angle) => {
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+                const dx = p.x - center.x;
+                const dy = p.y - center.y;
+                return {
+                    x: center.x + dx * cos - dy * sin,
+                    y: center.y + dx * sin + dy * cos
+                };
+            };
+            
+            const cutStartRot = rotatePoint(osteotomyPoints[0], hinge, angleRad);
+            const ankle1Rot = rotatePoint(osteotomyPoints[2], hinge, angleRad);
+            const heelRot = rotatePoint(osteotomyPoints[3], hinge, angleRad);
+            const ankle2Rot = rotatePoint(osteotomyPoints[4], hinge, angleRad);
+            
+            // DETEKCE: Rotace dolů (open) nebo nahoru (close)?
+            const isRotatingDown = cutStartRot.y > osteotomyPoints[0].y;
+            const isRotatingUp = cutStartRot.y < osteotomyPoints[0].y;
+            
+            // Nakreslit šedou oblast na původní pozici
+            ctx.beginPath();
+            ctx.moveTo(osteotomyPoints[0].x, osteotomyPoints[0].y);
+            ctx.lineTo(hinge.x, hinge.y);
+            ctx.lineTo(osteotomyPoints[2].x, osteotomyPoints[2].y);
+            ctx.lineTo(osteotomyPoints[3].x, osteotomyPoints[3].y);
+            ctx.lineTo(osteotomyPoints[4].x, osteotomyPoints[4].y);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(50, 50, 50, 0.7)';
+            ctx.fill();
+            
+            // Pak rotovaný oříznutý obrázek (5 bodů)
+            ctx.save();
+            
+            // CLOSE WEDGE: Ořezat původní linií řezu (rotace nahoru)
+            if (isRotatingUp) {
+                ctx.beginPath();
+                ctx.moveTo(osteotomyPoints[0].x, osteotomyPoints[0].y); // Původní cutStart
+                ctx.lineTo(hinge.x, hinge.y);
+                ctx.lineTo(ankle1Rot.x, ankle1Rot.y);
+                ctx.lineTo(heelRot.x, heelRot.y);
+                ctx.lineTo(ankle2Rot.x, ankle2Rot.y);
+                ctx.closePath();
+                ctx.clip();
+            } else {
+                // OPEN WEDGE: Standardní clipping (rotace dolů)
+                ctx.beginPath();
+                ctx.moveTo(cutStartRot.x, cutStartRot.y);
+                ctx.lineTo(hinge.x, hinge.y);
+                ctx.lineTo(ankle1Rot.x, ankle1Rot.y);
+                ctx.lineTo(heelRot.x, heelRot.y);
+                ctx.lineTo(ankle2Rot.x, ankle2Rot.y);
+                ctx.closePath();
+                ctx.clip();
+            }
+            
+            ctx.translate(hinge.x, hinge.y);
+            ctx.rotate(angleRad);
+            ctx.translate(-hinge.x, -hinge.y);
+            
+            ctx.drawImage(image, 0, 0);
+            
+            ctx.restore();
+            
+            // Vizualizace úhlu rotace v exportu (jen pokud rotujeme)
+            if (osteotomyAngle !== 0) {
+                const hinge = osteotomyPoints[1];
+                const angleRad = (osteotomyAngle * Math.PI) / 180;
+                const arcRadius = 60;
+                
+                const angle1 = Math.atan2(
+                    osteotomyPoints[0].y - hinge.y,
+                    osteotomyPoints[0].x - hinge.x
+                );
+                const angle2 = angle1 + angleRad;
+                
+                // Oblouk
+                ctx.strokeStyle = '#ffaa00';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(hinge.x, hinge.y, arcRadius, angle1, angle2, angleRad < 0);
+                ctx.stroke();
+                
+                // Čáry
+                ctx.strokeStyle = 'rgba(255, 170, 0, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 5]);
+                
+                ctx.beginPath();
+                ctx.moveTo(hinge.x, hinge.y);
+                ctx.lineTo(hinge.x + Math.cos(angle1) * arcRadius, hinge.y + Math.sin(angle1) * arcRadius);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(hinge.x, hinge.y);
+                ctx.lineTo(hinge.x + Math.cos(angle2) * arcRadius, hinge.y + Math.sin(angle2) * arcRadius);
+                ctx.stroke();
+                
+                ctx.setLineDash([]);
+                
+                // Text
+                const midAngle = (angle1 + angle2) / 2;
+                const textRadius = arcRadius + 30;
+                const textX = hinge.x + Math.cos(midAngle) * textRadius;
+                const textY = hinge.y + Math.sin(midAngle) * textRadius;
+                
+                ctx.fillStyle = '#ffaa00';
+                ctx.font = 'bold 28px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`${Math.abs(osteotomyAngle).toFixed(1)}°`, textX, textY);
+            }
+        }
+
+        function drawMeasurementOnExportContext(ctx, pts, angle, label, isFlipped, exportScale) {
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 3; // Fixní šířka pro export
+            ctx.fillStyle = '#00ff00';
+
+            // Kreslit linie
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y);
+            ctx.lineTo(pts[1].x, pts[1].y);
+            ctx.lineTo(pts[2].x, pts[2].y);
+            ctx.stroke();
+
+            // Kreslit body
+            pts.forEach((p, idx) => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 8, 0, Math.PI * 2); // Fixní velikost pro export
+                if (idx === 1) {
+                    ctx.fillStyle = '#ffff00';
+                } else {
+                    ctx.fillStyle = '#00ff00';
+                }
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+
+            // Vypočítat úhly
+            const angle1 = Math.atan2(pts[0].y - pts[1].y, pts[0].x - pts[1].x);
+            const angle2 = Math.atan2(pts[2].y - pts[1].y, pts[2].x - pts[1].x);
+            
+            const radius = 50; // Fixní radius pro export
+            let midAngle;
+            
+            // Vypočítat rozdíl úhlů
+            let diff = angle2 - angle1;
+            // Normalizovat do rozsahu -π až π
+            while (diff > Math.PI) diff -= 2 * Math.PI;
+            while (diff < -Math.PI) diff += 2 * Math.PI;
+            
+            // isFlipped určuje směr, ne velikost úhlu!
+            const anticlockwise = isFlipped ? (diff >= 0) : (diff < 0);
+            
+            ctx.beginPath();
+            ctx.arc(pts[1].x, pts[1].y, radius, angle1, angle2, anticlockwise);
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Střední úhel pro pozici textu
+            if (isFlipped) {
+                // Větší úhel - střed na opačné straně
+                if (diff > 0) {
+                    midAngle = angle1 - (2 * Math.PI - diff) / 2;
+                } else {
+                    midAngle = angle1 + (2 * Math.PI + diff) / 2;
+                }
+            } else {
+                // Menší úhel - normální střed
+                midAngle = angle1 + diff / 2;
+            }
+
+            const displayAngle = isFlipped ? (360 - angle) : angle;
+            const textDistance = 80; // Fixní vzdálenost pro export
+            const textX = pts[1].x + Math.cos(midAngle) * textDistance;
+            const textY = pts[1].y + Math.sin(midAngle) * textDistance;
+
+            ctx.save();
+            ctx.translate(textX, textY);
+            ctx.font = 'bold 32px Arial'; // Větší font pro export
+            ctx.fillStyle = '#ffff00';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 5;
+            
+            // Zarovnání textu podle pozice - pokud je text vlevo, zarovnat doprava
+            if (Math.cos(midAngle) < 0) {
+                // Text je na levé straně - zarovnat doprava
+                ctx.textAlign = 'right';
+            } else {
+                // Text je na pravé straně - zarovnat doleva
+                ctx.textAlign = 'left';
+            }
+            ctx.textBaseline = 'middle';
+            
+            const text = `${displayAngle.toFixed(1)}° ${label}`;
+            ctx.strokeText(text, 0, 0);
+            ctx.fillText(text, 0, 0);
+            ctx.restore();
+            
+            // Nakreslit délku prvního ramene (bod 0 → bod 1) - FEMUR v exportu
+            if (pixelsPerCm) {
+                const arm1Length = Math.sqrt(
+                    Math.pow(pts[1].x - pts[0].x, 2) +
+                    Math.pow(pts[1].y - pts[0].y, 2)
+                );
+                const arm1LengthCm = arm1Length / pixelsPerCm;
+                
+                const mid1X = (pts[0].x + pts[1].x) / 2;
+                const mid1Y = (pts[0].y + pts[1].y) / 2;
+                
+                ctx.save();
+                ctx.translate(mid1X, mid1Y);
+                ctx.font = 'bold 28px Arial';
+                ctx.fillStyle = '#ffaa00';
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 5;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const dist1Text = `${arm1LengthCm.toFixed(1)} cm`;
+                ctx.strokeText(dist1Text, 0, -25);
+                ctx.fillText(dist1Text, 0, -25);
+                ctx.restore();
+            }
+            
+            // Nakreslit délku druhého ramene (bod 1 → bod 2) - TIBIA v exportu
+            if (pixelsPerCm) {
+                const armLength = Math.sqrt(
+                    Math.pow(pts[2].x - pts[1].x, 2) +
+                    Math.pow(pts[2].y - pts[1].y, 2)
+                );
+                const armLengthCm = armLength / pixelsPerCm;
+                
+                // Střed ramene
+                const midX = (pts[1].x + pts[2].x) / 2;
+                const midY = (pts[1].y + pts[2].y) / 2;
+                
+                // Nakreslit text s délkou
+                ctx.save();
+                ctx.translate(midX, midY);
+                ctx.font = 'bold 28px Arial';
+                ctx.fillStyle = '#ffaa00';
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 5;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const distText = `${armLengthCm.toFixed(1)} cm`;
+                ctx.strokeText(distText, 0, -25);
+                ctx.fillText(distText, 0, -25);
+                ctx.restore();
+            }
+        }
+
+        function drawDistanceMeasurementOnExportContext(ctx, d) {
+            ctx.strokeStyle = '#ff8800'; // Oranžová
+            ctx.lineWidth = 3;
+            
+            // Kreslit čáru
+            ctx.beginPath();
+            ctx.moveTo(d.points[0].x, d.points[0].y);
+            ctx.lineTo(d.points[1].x, d.points[1].y);
+            ctx.stroke();
+            
+            // Kreslit body
+            d.points.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff8800';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+            
+            // Text se vzdáleností uprostřed čáry
+            const midX = (d.points[0].x + d.points[1].x) / 2;
+            const midY = (d.points[0].y + d.points[1].y) / 2;
+            
+            ctx.save();
+            ctx.translate(midX, midY);
+            ctx.font = 'bold 32px Arial'; // Větší font pro export
+            ctx.fillStyle = '#ff8800';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 5;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const text = `${d.distance.toFixed(1)} cm`;
+            ctx.strokeText(text, 0, -20);
+            ctx.fillText(text, 0, -20);
+            ctx.restore();
+        }
+
+        function drawCurrentPointsOnExportContext(ctx, exportScale) {
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 3;
+            ctx.fillStyle = '#ff0000';
+
+            if (points.length >= 2) {
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i].x, points[i].y);
+                }
+                ctx.stroke();
+            }
+
+            points.forEach((p, idx) => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+                if (idx === 1) {
+                    ctx.fillStyle = '#ffa500';
+                } else {
+                    ctx.fillStyle = '#ff0000';
+                }
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.font = 'bold 28px Arial';
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 5;
+                ctx.strokeText((idx + 1).toString(), 15, -15);
+                ctx.fillText((idx + 1).toString(), 15, -15);
+                ctx.restore();
+            });
+        }
+
+        function checkMeasurementLimit() {
+            if (maxMeasurements !== null && measurements.length >= maxMeasurements) {
+                measurementsActive = false;
+                updateMeasurementsList();
+            }
+        }
+
+        // Touch eventy
+        function handleTouchStart(e) {
+            if (!image) return;
+
+            touchStartTime = Date.now();
+
+            if (e.touches.length === 2) {
+                e.preventDefault(); // Zabránit default zoom prohlížeče
+                // Pinch zoom
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                lastTouchDistance = Math.sqrt(
+                    Math.pow(touch2.clientX - touch1.clientX, 2) +
+                    Math.pow(touch2.clientY - touch1.clientY, 2)
+                );
+                return;
+            }
+
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const touchX = (touch.clientX - rect.left - offsetX) / scale;
+                const touchY = (touch.clientY - rect.top - offsetY) / scale;
+                const clickRadius = 15 / scale;
+
+                // NEJDŘÍV zkontrolovat handle body kruhů (mají prioritu)
+                for (let mIdx = 0; mIdx < measurements.length; mIdx++) {
+                    const m = measurements[mIdx];
+                    if (!m.visible) continue; // Přeskočit skrytá měření
+                    
+                    if (m.circle) {
+                        const handleX = m.circle.center.x + Math.cos(m.circle.handleAngle) * m.circle.radius;
+                        const handleY = m.circle.center.y + Math.sin(m.circle.handleAngle) * m.circle.radius;
+                        const dist = Math.sqrt(
+                            Math.pow(handleX - touchX, 2) + 
+                            Math.pow(handleY - touchY, 2)
+                        );
+                        
+                        if (dist <= clickRadius) {
+                            e.preventDefault();
+                            isDraggingPoint = true;
+                            draggedMeasurementIndex = mIdx;
+                            draggedPointIndex = -2; // -2 znamená handle kruhu
+                            return;
+                        }
+                    }
+                }
+
+                // Zkontrolovat body z dokončených měření
+                for (let mIdx = 0; mIdx < measurements.length; mIdx++) {
+                    if (!measurements[mIdx].visible) continue; // Přeskočit skrytá měření
+                    
+                    for (let pIdx = 0; pIdx < measurements[mIdx].points.length; pIdx++) {
+                        const point = measurements[mIdx].points[pIdx];
+                        const dist = Math.sqrt(
+                            Math.pow(point.x - touchX, 2) + 
+                            Math.pow(point.y - touchY, 2)
+                        );
+                        
+                        if (dist <= clickRadius) {
+                            e.preventDefault(); // Zabránit click eventu při dragu bodu
+                            isDraggingPoint = true;
+                            draggedMeasurementIndex = mIdx;
+                            draggedPointIndex = pIdx;
+                            return;
+                        }
+                    }
+                }
+
+                // Zkontrolovat aktuální body
+                for (let i = 0; i < points.length; i++) {
+                    const point = points[i];
+                    const dist = Math.sqrt(
+                        Math.pow(point.x - touchX, 2) + 
+                        Math.pow(point.y - touchY, 2)
+                    );
+                    
+                    if (dist <= clickRadius) {
+                        e.preventDefault(); // Zabránit click eventu při dragu bodu
+                        isDraggingPoint = true;
+                        draggedMeasurementIndex = -1;
+                        draggedPointIndex = i;
+                        return;
+                    }
+                }
+
+                // Zkontrolovat body osteotomie
+                if (osteotomyPoints.length === 5) {
+                    for (let i = 0; i < osteotomyPoints.length; i++) {
+                        const point = osteotomyPoints[i];
+                        const dist = Math.sqrt(
+                            Math.pow(point.x - touchX, 2) + 
+                            Math.pow(point.y - touchY, 2)
+                        );
+                        
+                        if (dist <= clickRadius) {
+                            e.preventDefault();
+                            isDraggingPoint = true;
+                            draggedMeasurementIndex = -4; // -4 znamená osteotomy bod
+                            draggedPointIndex = i;
+                            return;
+                        }
+                    }
+                }
+
+                // Pokud nejsme nad bodem, začít pan
+                isTouchDragging = true;
+                dragStart = {
+                    x: touch.clientX - offsetX,
+                    y: touch.clientY - offsetY
+                };
+            }
+        }
+
+        function handleTouchMove(e) {
+            if (!image) return;
+
+            // preventDefault jen pokud skutečně něco děláme
+            if (e.touches.length === 2 || isDraggingPoint || isTouchDragging) {
+                e.preventDefault();
+            }
+
+            if (e.touches.length === 2) {
+                // Pinch zoom
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = Math.sqrt(
+                    Math.pow(touch2.clientX - touch1.clientX, 2) +
+                    Math.pow(touch2.clientY - touch1.clientY, 2)
+                );
+
+                if (lastTouchDistance > 0) {
+                    const delta = currentDistance / lastTouchDistance;
+                    const centerX = (touch1.clientX + touch2.clientX) / 2 - canvas.getBoundingClientRect().left;
+                    const centerY = (touch1.clientY + touch2.clientY) / 2 - canvas.getBoundingClientRect().top;
+                    zoom(delta, centerX, centerY);
+                }
+
+                lastTouchDistance = currentDistance;
+                return;
+            }
+
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const touchX = (touch.clientX - rect.left - offsetX) / scale;
+                const touchY = (touch.clientY - rect.top - offsetY) / scale;
+
+                if (isDraggingPoint) {
+                    // Přetahování bodu
+                    if (draggedMeasurementIndex === -1) {
+                        points[draggedPointIndex].x = touchX;
+                        points[draggedPointIndex].y = touchY;
+                    } else if (draggedPointIndex === -2) {
+                        // Přetahování handle bodu kruhu - mění poloměr
+                        const m = measurements[draggedMeasurementIndex];
+                        const newRadius = Math.sqrt(
+                            Math.pow(touchX - m.circle.center.x, 2) + 
+                            Math.pow(touchY - m.circle.center.y, 2)
+                        );
+                        m.circle.radius = Math.max(5, newRadius); // Min 5px
+                        
+                        // Aktualizovat úhel handle
+                        m.circle.handleAngle = Math.atan2(
+                            touchY - m.circle.center.y,
+                            touchX - m.circle.center.x
+                        );
+                    } else if (draggedMeasurementIndex === -4) {
+                        // Přetahování bodu osteotomie
+                        osteotomyPoints[draggedPointIndex].x = touchX;
+                        osteotomyPoints[draggedPointIndex].y = touchY;
+                    } else if (draggedPointIndex === 0) {
+                        // Přetahování prvního bodu (kyčel) - posunout i střed kruhu
+                        const m = measurements[draggedMeasurementIndex];
+                        const dx = touchX - m.points[0].x;
+                        const dy = touchY - m.points[0].y;
+                        
+                        m.points[0].x = touchX;
+                        m.points[0].y = touchY;
+                        
+                        // Posunout i střed kruhu
+                        if (m.circle) {
+                            m.circle.center.x += dx;
+                            m.circle.center.y += dy;
+                        }
+                        
+                        // Přepočítat úhel
+                        const pts = m.points;
+                        m.angle = calculateAngle(pts[0], pts[1], pts[2]);
+                        updateMeasurementsList();
+                    } else {
+                        measurements[draggedMeasurementIndex].points[draggedPointIndex].x = touchX;
+                        measurements[draggedMeasurementIndex].points[draggedPointIndex].y = touchY;
+                        
+                        const pts = measurements[draggedMeasurementIndex].points;
+                        measurements[draggedMeasurementIndex].angle = calculateAngle(pts[0], pts[1], pts[2]);
+                        updateMeasurementsList();
+                    }
+                    draw();
+                    return;
+                }
+
+                if (isTouchDragging) {
+                    // Pan
+                    offsetX = touch.clientX - dragStart.x;
+                    offsetY = touch.clientY - dragStart.y;
+                    draw();
+                }
+            }
+        }
+
+        function handleTouchEnd(e) {
+            // Nepoužívat preventDefault, aby click event mohl proběhnout
+            if (!image) return;
+
+            isDraggingPoint = false;
+            isTouchDragging = false;
+            draggedMeasurementIndex = null;
+            draggedPointIndex = null;
+            lastTouchDistance = 0;
+        }
+
+        function updatePointsList() {
+            const list = document.getElementById('pointsList');
+            const section = document.getElementById('pointsSection');
+            
+            if (points.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            list.innerHTML = '';
+
+            points.forEach((point, index) => {
+                const li = document.createElement('li');
+                li.className = 'point-item';
+                if (index === 1) li.classList.add('vertex');
+                
+                let badge = '';
+                if (index === 0) badge = '<span class="badge badge-arm">Rameno 1</span>';
+                else if (index === 1) badge = '<span class="badge badge-vertex">Vrchol</span>';
+                else if (index === 2) badge = '<span class="badge badge-arm">Rameno 2</span>';
+                
+                li.innerHTML = `
+                    <span>Bod ${index + 1}: (${Math.round(point.x)}, ${Math.round(point.y)})</span>
+                    ${badge}
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function updateMeasurementsList() {
+            const list = document.getElementById('measurementsList');
+            const section = document.getElementById('measurementsSection');
+            
+            if (measurements.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            list.innerHTML = '';
+
+            // Zobrazit jednotlivá měření
+            measurements.forEach((m, idx) => {
+                const div = document.createElement('div');
+                div.className = 'measurement-item';
+                
+                const displayAngle = m.isFlipped ? (360 - m.angle) : m.angle;
+                const visibilityIcon = m.visible ? '👁️' : '🚫';
+                const visibilityText = m.visible ? 'Skrýt' : 'Zobrazit';
+                
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: bold; font-size: 16px;">Měření #${m.id} - ${displayAngle.toFixed(1)}°</span>
+                        <button class="delete-btn" onclick="deleteMeasurement(${idx})" title="Smazat měření">🗑️</button>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="switch-btn" onclick="switchAngle(${idx})">🔄 Switch</button>
+                        <button class="switch-btn" onclick="toggleVisibility(${idx})">${visibilityIcon} ${visibilityText}</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function updatePlatesList() {
+            const list = document.getElementById('platesList');
+            const section = document.getElementById('platesSection');
+            
+            if (plates.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            list.innerHTML = '';
+
+            // Zobrazit jednotlivé dlahy
+            plates.forEach((plate, idx) => {
+                const div = document.createElement('div');
+                div.className = 'measurement-item';
+                
+                const visibilityIcon = plate.visible !== false ? '👁️' : '🚫';
+                const visibilityText = plate.visible !== false ? 'Skrýt' : 'Zobrazit';
+                const isActive = plate === currentPlate;
+                
+                div.style.background = isActive ? '#e3f2fd' : '#f8f9fa';
+                div.style.borderColor = isActive ? '#2196F3' : '#dee2e6';
+                
+                div.innerHTML = `
+                    <div style="margin-bottom: 8px;">
+                        <strong style="font-size: 15px;">${plate.code}</strong><br>
+                        <small style="color: #666;">${plate.realLength}mm × ${plate.type === 'image' ? '5mm' : '4mm'}${plate.holePositions ? ' | ' + plate.holePositions.length + ' otvorů' : ''}</small>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="switch-btn" onclick="setCurrentPlate(${idx})" style="flex: 1;">✏️ Upravit</button>
+                        <button class="switch-btn" onclick="togglePlateVisibility(${idx})">${visibilityIcon} ${visibilityText}</button>
+                        <button class="switch-btn" onclick="deletePlate(${idx})" style="background: #dc3545;">🗑️</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function setCurrentPlate(idx) {
+            currentPlate = plates[idx];
+            updatePlatesList();
+            draw();
+        }
+
+        function togglePlateVisibility(idx) {
+            plates[idx].visible = plates[idx].visible === false ? true : false;
+            updatePlatesList();
+            draw();
+        }
+
+        function deletePlate(idx) {
+            if (plates[idx] === currentPlate) {
+                currentPlate = null;
+            }
+            plates.splice(idx, 1);
+            if (plates.length > 0 && !currentPlate) {
+                currentPlate = plates[0];
+            }
+            updatePlatesList();
+            draw();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (!image) return;
+
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+            
+            // Kreslit obrázek
+            ctx.drawImage(image, 0, 0);
+            
+            // NEJDŘÍV nakreslit osteotomy overlay (oříznutý obrázek a bílá mezera)
+            if (osteotomyMode || osteotomyPoints.length > 0) {
+                drawOsteotomyOverlay();
+            }
+            
+            // PAK nakreslit měření NAVRCHU
+            // Kreslit dokončená měření
+            measurements.forEach((m, idx) => {
+                if (m.visible) { // Kreslit jen viditelná měření
+                    // Pokud je aktivní osteotomie, transformovat body které jsou v polygonu
+                    let transformedPoints = [...m.points];
+                    let displayAngle = m.angle;
+                    
+                    if (osteotomyPoints.length === 5 && osteotomyAngle !== 0) {
+                        const hinge = osteotomyPoints[1];
+                        const angleRad = (osteotomyAngle * Math.PI) / 180;
+                        const originalPolygon = osteotomyPoints; // Původní polygon bez rotace
+                        
+                        // Transformovat každý bod pokud je v původním polygonu
+                        transformedPoints = m.points.map(pt => {
+                            if (isPointInPolygon(pt, originalPolygon)) {
+                                return rotatePointAround(pt, hinge, angleRad);
+                            }
+                            return pt;
+                        });
+                        
+                        // Přepočítat úhel pokud se body změnily
+                        displayAngle = calculateAngle(transformedPoints[0], transformedPoints[1], transformedPoints[2]);
+                    }
+                    
+                    drawMeasurement(transformedPoints, displayAngle, `#${m.id}`, m.isFlipped);
+                    
+                    // Kreslit kruh kolem prvního bodu (kyčel)
+                    if (m.circle) {
+                        drawCircle(m.circle);
+                    }
+                }
+            });
+            
+            // Kreslit aktuální body
+            if (points.length > 0) {
+                drawCurrentPoints();
+            }
+            
+            // Kreslit kalibrační čáru
+            if (calibrationPoints.length > 0) {
+                drawCalibrationLine();
+            }
+            
+            // Kreslit dokončené vzdálenosti
+            distanceMeasurements.forEach((d) => {
+                if (d.visible) { // Kreslit jen viditelné vzdálenosti
+                    // Pokud je aktivní osteotomie, transformovat body které jsou v polygonu
+                    let transformedDistancePoints = [...d.points];
+                    
+                    if (osteotomyPoints.length === 5 && osteotomyAngle !== 0) {
+                        const hinge = osteotomyPoints[1];
+                        const angleRad = (osteotomyAngle * Math.PI) / 180;
+                        const originalPolygon = osteotomyPoints;
+                        
+                        // Transformovat každý bod pokud je v původním polygonu
+                        transformedDistancePoints = d.points.map(pt => {
+                            if (isPointInPolygon(pt, originalPolygon)) {
+                                return rotatePointAround(pt, hinge, angleRad);
+                            }
+                            return pt;
+                        });
+                        
+                        // Přepočítat vzdálenost
+                        const pixelDist = Math.sqrt(
+                            Math.pow(transformedDistancePoints[1].x - transformedDistancePoints[0].x, 2) +
+                            Math.pow(transformedDistancePoints[1].y - transformedDistancePoints[0].y, 2)
+                        );
+                        const newDistance = pixelDist / pixelsPerCm;
+                        
+                        // Dočasně upravit vzdálenost pro zobrazení
+                        const tempD = {...d, points: transformedDistancePoints, distance: newDistance};
+                        drawDistanceMeasurement(tempD);
+                    } else {
+                        drawDistanceMeasurement(d);
+                    }
+                }
+            });
+            
+            // Kreslit aktuální vzdálenostní body
+            if (distancePoints.length > 0) {
+                drawCurrentDistancePoints();
+            }
+            
+            // Kreslit dlahy
+            if (plates.length > 0) {
+                drawPlates();
+            }
+            
+            ctx.restore();
+        }
+
+        function drawCircle(circle) {
+            // Kreslit kruh
+            ctx.strokeStyle = '#00ffff'; // Cyan barva
+            ctx.lineWidth = 2 / scale;
+            ctx.setLineDash([5 / scale, 5 / scale]); // Čárkovaná čára
+            ctx.beginPath();
+            ctx.arc(circle.center.x, circle.center.y, circle.radius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset na plnou čáru
+            
+            // Kreslit handle bod na obvodu
+            const handleX = circle.center.x + Math.cos(circle.handleAngle) * circle.radius;
+            const handleY = circle.center.y + Math.sin(circle.handleAngle) * circle.radius;
+            
+            ctx.beginPath();
+            ctx.arc(handleX, handleY, 6 / scale, 0, Math.PI * 2);
+            ctx.fillStyle = '#00ffff';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2 / scale;
+            ctx.stroke();
+        }
+
+        function drawMeasurement(pts, angle, label, isFlipped) {
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2 / scale;
+            ctx.fillStyle = '#00ff00';
+
+            // Kreslit linie
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y);
+            ctx.lineTo(pts[1].x, pts[1].y);
+            ctx.lineTo(pts[2].x, pts[2].y);
+            ctx.stroke();
+
+            // Kreslit body
+            pts.forEach((p, idx) => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 5 / scale, 0, Math.PI * 2);
+                if (idx === 1) {
+                    ctx.fillStyle = '#ffff00'; // Vrchol žlutě
+                } else {
+                    ctx.fillStyle = '#00ff00';
+                }
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1 / scale;
+                ctx.stroke();
+            });
+
+            // Vypočítat úhly
+            const angle1 = Math.atan2(pts[0].y - pts[1].y, pts[0].x - pts[1].x);
+            const angle2 = Math.atan2(pts[2].y - pts[1].y, pts[2].x - pts[1].x);
+            
+            // Kreslit oblouk úhlu
+            const radius = 30 / scale;
+            let midAngle;
+            
+            // Vypočítat rozdíl úhlů
+            let diff = angle2 - angle1;
+            // Normalizovat do rozsahu -π až π
+            while (diff > Math.PI) diff -= 2 * Math.PI;
+            while (diff < -Math.PI) diff += 2 * Math.PI;
+            
+            // isFlipped určuje směr, ne velikost úhlu!
+            const anticlockwise = isFlipped ? (diff >= 0) : (diff < 0);
+            
+            ctx.beginPath();
+            ctx.arc(pts[1].x, pts[1].y, radius, angle1, angle2, anticlockwise);
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = 2 / scale;
+            ctx.stroke();
+            
+            // Střední úhel pro pozici textu
+            if (isFlipped) {
+                // Větší úhel - střed na opačné straně
+                if (diff > 0) {
+                    midAngle = angle1 - (2 * Math.PI - diff) / 2;
+                } else {
+                    midAngle = angle1 + (2 * Math.PI + diff) / 2;
+                }
+            } else {
+                // Menší úhel - normální střed
+                midAngle = angle1 + diff / 2;
+            }
+
+            // Vypočítat pozici pro text - uvnitř měřeného úhlu
+            const displayAngle = isFlipped ? (360 - angle) : angle;
+            const textDistance = 50 / scale;
+            const textX = pts[1].x + Math.cos(midAngle) * textDistance;
+            const textY = pts[1].y + Math.sin(midAngle) * textDistance;
+
+            // Text s úhlem
+            ctx.save();
+            ctx.translate(textX, textY);
+            ctx.scale(1/scale, 1/scale);
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#ffff00';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+            
+            // Zarovnání textu podle pozice - pokud je text vlevo, zarovnat doprava
+            const normalizedMidAngle = midAngle % (2 * Math.PI);
+            if (Math.cos(midAngle) < 0) {
+                // Text je na levé straně - zarovnat doprava
+                ctx.textAlign = 'right';
+            } else {
+                // Text je na pravé straně - zarovnat doleva
+                ctx.textAlign = 'left';
+            }
+            ctx.textBaseline = 'middle';
+            
+            const text = `${displayAngle.toFixed(1)}° ${label}`;
+            ctx.strokeText(text, 0, 0);
+            ctx.fillText(text, 0, 0);
+            ctx.restore();
+            
+            // Nakreslit délku prvního ramene (bod 0 → bod 1) - FEMUR
+            if (pixelsPerCm) {
+                const arm1Length = Math.sqrt(
+                    Math.pow(pts[1].x - pts[0].x, 2) +
+                    Math.pow(pts[1].y - pts[0].y, 2)
+                );
+                const arm1LengthCm = arm1Length / pixelsPerCm;
+                
+                // Střed prvního ramene
+                const mid1X = (pts[0].x + pts[1].x) / 2;
+                const mid1Y = (pts[0].y + pts[1].y) / 2;
+                
+                ctx.save();
+                ctx.translate(mid1X, mid1Y);
+                ctx.scale(1/scale, 1/scale);
+                ctx.font = 'bold 18px Arial';
+                ctx.fillStyle = '#ffaa00';
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 3;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const dist1Text = `${arm1LengthCm.toFixed(1)} cm`;
+                ctx.strokeText(dist1Text, 0, -15);
+                ctx.fillText(dist1Text, 0, -15);
+                ctx.restore();
+            }
+            
+            // Nakreslit délku druhého ramene (bod 1 → bod 2) - TIBIA
+            if (pixelsPerCm) {
+                const armLength = Math.sqrt(
+                    Math.pow(pts[2].x - pts[1].x, 2) +
+                    Math.pow(pts[2].y - pts[1].y, 2)
+                );
+                const armLengthCm = armLength / pixelsPerCm;
+                
+                // Střed ramene
+                const midX = (pts[1].x + pts[2].x) / 2;
+                const midY = (pts[1].y + pts[2].y) / 2;
+                
+                // Nakreslit text s délkou
+                ctx.save();
+                ctx.translate(midX, midY);
+                ctx.scale(1/scale, 1/scale);
+                ctx.font = 'bold 18px Arial';
+                ctx.fillStyle = '#ffaa00'; // Oranžová jako vzdálenosti
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 3;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const distText = `${armLengthCm.toFixed(1)} cm`;
+                ctx.strokeText(distText, 0, -15);
+                ctx.fillText(distText, 0, -15);
+                ctx.restore();
+            }
+        }
+
+        function drawCurrentPoints() {
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 2 / scale;
+            ctx.fillStyle = '#ff0000';
+
+            // Kreslit linie mezi body
+            if (points.length >= 2) {
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i].x, points[i].y);
+                }
+                ctx.stroke();
+            }
+
+            // Kreslit body
+            points.forEach((p, idx) => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 6 / scale, 0, Math.PI * 2);
+                if (idx === 1) {
+                    ctx.fillStyle = '#ffa500'; // Vrchol oranžově
+                } else {
+                    ctx.fillStyle = '#ff0000';
+                }
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2 / scale;
+                ctx.stroke();
+
+                // Číslo bodu
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.scale(1/scale, 1/scale);
+                ctx.font = 'bold 16px Arial';
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 3;
+                ctx.strokeText((idx + 1).toString(), 10, -10);
+                ctx.fillText((idx + 1).toString(), 10, -10);
+                ctx.restore();
+            });
+        }
+
+        function drawCalibrationLine() {
+            ctx.strokeStyle = '#ff00ff'; // Magenta
+            ctx.lineWidth = 3 / scale;
+            ctx.setLineDash([10 / scale, 5 / scale]);
+            
+            if (calibrationPoints.length >= 1) {
+                // Kreslit body
+                calibrationPoints.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 8 / scale, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ff00ff';
+                    ctx.fill();
+                });
+            }
+            
+            if (calibrationPoints.length === 2) {
+                // Kreslit čáru
+                ctx.beginPath();
+                ctx.moveTo(calibrationPoints[0].x, calibrationPoints[0].y);
+                ctx.lineTo(calibrationPoints[1].x, calibrationPoints[1].y);
+                ctx.stroke();
+            }
+            
+            ctx.setLineDash([]);
+        }
+
+        function drawDistanceMeasurement(d) {
+            ctx.strokeStyle = '#ff8800'; // Oranžová
+            ctx.lineWidth = 3 / scale;
+            
+            // Kreslit čáru
+            ctx.beginPath();
+            ctx.moveTo(d.points[0].x, d.points[0].y);
+            ctx.lineTo(d.points[1].x, d.points[1].y);
+            ctx.stroke();
+            
+            // Kreslit body
+            d.points.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 6 / scale, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff8800';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2 / scale;
+                ctx.stroke();
+            });
+            
+            // Text se vzdáleností uprostřed čáry
+            const midX = (d.points[0].x + d.points[1].x) / 2;
+            const midY = (d.points[0].y + d.points[1].y) / 2;
+            
+            ctx.save();
+            ctx.translate(midX, midY);
+            ctx.scale(1/scale, 1/scale);
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#ff8800';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const text = `${d.distance.toFixed(1)} cm`;
+            ctx.strokeText(text, 0, -15);
+            ctx.fillText(text, 0, -15);
+            ctx.restore();
+        }
+
+        function drawCurrentDistancePoints() {
+            ctx.strokeStyle = '#ff8800';
+            ctx.lineWidth = 3 / scale;
+            
+            if (distancePoints.length >= 1) {
+                distancePoints.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 8 / scale, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ff8800';
+                    ctx.fill();
+                });
+            }
+            
+            if (distancePoints.length === 2) {
+                ctx.beginPath();
+                ctx.moveTo(distancePoints[0].x, distancePoints[0].y);
+                ctx.lineTo(distancePoints[1].x, distancePoints[1].y);
+                ctx.stroke();
+            }
+        }
+
+        // ========== OSTEOTOMIE FUNKCE ==========
+        
+        function createOsteotomyPolygon() {
+            // Body: [cutStart, cutEnd/hinge, ankle1, ankle2]
+            // Polygon: cutStart -> cutEnd -> ankle2 -> ankle1 -> zpět na cutStart
+            
+            osteotomyMode = false; // Ukončit mód zadávání bodů
+            
+            // Zobrazit sekci s sliderem
+            document.getElementById('osteotomySection').style.display = 'block';
+            
+            // Přidat event listener pro slider
+            const slider = document.getElementById('osteotomySlider');
+            slider.addEventListener('input', function() {
+                osteotomyAngle = parseFloat(this.value);
+                document.getElementById('osteotomyAngleDisplay').textContent = osteotomyAngle.toFixed(1) + '°';
+                
+                // Uložit jako chirurgův úhel (pokud nejsme v preview režimu)
+                if (!isPreviewMode) {
+                    savedOsteotomyAngle = osteotomyAngle;
+                }
+                
+                // Detekovat směr rotace pro aktualizaci UI
+                if (osteotomyAngle !== 0 && osteotomyPoints.length === 5) {
+                    const hinge = osteotomyPoints[1];
+                    const angleRad = (osteotomyAngle * Math.PI) / 180;
+                    
+                    // Rotovat cutStart
+                    const cos = Math.cos(angleRad);
+                    const sin = Math.sin(angleRad);
+                    const dx = osteotomyPoints[0].x - hinge.x;
+                    const dy = osteotomyPoints[0].y - hinge.y;
+                    const cutStartRotY = hinge.y + dx * sin + dy * cos;
+                    
+                    const wedgeDisplay = document.getElementById('wedgeTypeDisplay');
+                    if (cutStartRotY > osteotomyPoints[0].y) {
+                        // Rotace DOLŮ = OPEN
+                        wedgeDisplay.textContent = '⚪ OPEN wedge';
+                        wedgeDisplay.style.color = '#4caf50';
+                    } else if (cutStartRotY < osteotomyPoints[0].y) {
+                        // Rotace NAHORU = CLOSE
+                        wedgeDisplay.textContent = '🔴 CLOSE wedge';
+                        wedgeDisplay.style.color = '#f44336';
+                    } else {
+                        wedgeDisplay.textContent = '-';
+                        wedgeDisplay.style.color = '#666';
+                    }
+                } else {
+                    document.getElementById('wedgeTypeDisplay').textContent = '-';
+                    document.getElementById('wedgeTypeDisplay').style.color = '#666';
+                }
+                
+                draw();
+            });
+            
+            draw();
+        }
+
+        function cancelOsteotomy() {
+            osteotomyMode = false;
+            osteotomyPoints = [];
+            osteotomyAngle = 0;
+            osteotomyStep = 0;
+            document.getElementById('osteotomySection').style.display = 'none';
+            document.getElementById('osteotomySlider').value = 0;
+            document.getElementById('osteotomyAngleDisplay').textContent = '0.0°';
+            draw();
+        }
+
+        function resetOsteotomyAngle() {
+            osteotomyAngle = 0;
+            savedOsteotomyAngle = 0;
+            isPreviewMode = false;
+            document.getElementById('osteotomySlider').value = 0;
+            document.getElementById('osteotomyAngleDisplay').textContent = '0.0°';
+            document.getElementById('previewBtnText').textContent = 'Před op.';
+            document.getElementById('wedgeTypeDisplay').textContent = '-';
+            document.getElementById('wedgeTypeDisplay').style.color = '#666';
+            draw();
+        }
+        
+        function togglePreviewMode() {
+            if (!isPreviewMode) {
+                // Přepnout na PŘEDOPERAČNÍ (0° s červeným klínem)
+                savedOsteotomyAngle = osteotomyAngle; // Uložit aktuální úhel
+                osteotomyAngle = 0; // Nastavit na 0
+                isPreviewMode = true;
+                document.getElementById('previewBtnText').textContent = 'Po op.';
+                document.getElementById('osteotomyAngleDisplay').textContent = `(${savedOsteotomyAngle.toFixed(1)}°)`;
+            } else {
+                // Přepnout zpět na POOPERAČNÍ (rotovaná kost)
+                osteotomyAngle = savedOsteotomyAngle; // Obnovit úhel
+                isPreviewMode = false;
+                document.getElementById('previewBtnText').textContent = 'Před op.';
+                document.getElementById('osteotomyAngleDisplay').textContent = `${osteotomyAngle.toFixed(1)}°`;
+            }
+            
+            // Aktualizovat slider (ale neměnit savedOsteotomyAngle)
+            document.getElementById('osteotomySlider').value = osteotomyAngle;
+            
+            draw();
+        }
+
+        function updateStatusBar(message) {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.textContent = message;
+        }
+
+        function getStatusMessage() {
+            // Priorita stavů
+            if (!image) {
+                return "ℹ️ Nahrajte RTG snímek ve formátu .jpg nebo .png";
+            }
+            
+            if (osteotomyMode) {
+                if (osteotomyPoints.length === 0) {
+                    return "🔪 OSTEOTOMIE: Klikněte 2 body pro linii řezu (začátek → konec/hinge)";
+                } else if (osteotomyPoints.length === 1) {
+                    return "🔪 OSTEOTOMIE: Klikněte druhý bod linie řezu (bude hinge - střed rotace)";
+                } else if (osteotomyPoints.length === 2) {
+                    return "🔪 OSTEOTOMIE: Klikněte 3 body okolo nohy (pravý kotník → pata → levý kotník)";
+                } else if (osteotomyPoints.length === 3) {
+                    return "🔪 OSTEOTOMIE: Klikněte bod u paty/nejnižší bod nohy";
+                } else if (osteotomyPoints.length === 5) {
+                    return "🔪 OSTEOTOMIE: Klikněte poslední bod (levý kotník)";
+                }
+            }
+            
+            if (osteotomyPoints.length === 5) {
+                return "🔪 OSTEOTOMIE aktivní: Použijte slider pro rotaci | Tlačítko Reset 0° pro návrat";
+            }
+            
+            if (isCalibrating) {
+                if (calibrationPoints.length === 0) {
+                    return "📏 KALIBRACE: Klikněte první bod na pravítku";
+                } else if (calibrationPoints.length === 1) {
+                    return "📏 KALIBRACE: Klikněte druhý bod na pravítku → Zadejte vzdálenost v cm";
+                }
+            }
+            
+            if (measurementsActive) {
+                const remaining = maxMeasurements - measurements.length;
+                const current = points.length;
+                if (current === 0) {
+                    return `∠ MĚŘENÍ ÚHLU: Klikněte první bod (začátek ramene) | Zbývá ${remaining} měření`;
+                } else if (current === 1) {
+                    return `∠ MĚŘENÍ ÚHLU: Klikněte druhý bod (vrchol úhlu)`;
+                } else if (current === 2) {
+                    return `∠ MĚŘENÍ ÚHLU: Klikněte třetí bod (konec ramene)`;
+                }
+                if (measurements.length >= maxMeasurements) {
+                    return `✅ Úhly dokončeny (${measurements.length}/${maxMeasurements}) | Můžete měřit vzdálenosti nebo simulovat osteotomii`;
+                }
+                return `∠ MĚŘENÍ ÚHLU: Změřeno ${measurements.length}/${maxMeasurements} | Klikněte první bod pro další měření`;
+            }
+            
+            if (distanceMeasurementsActive) {
+                const remaining = maxDistanceMeasurements - distanceMeasurements.length;
+                const current = distancePoints.length;
+                if (current === 0) {
+                    return `📏 MĚŘENÍ VZDÁLENOSTI: Klikněte první bod | Zbývá ${remaining} měření`;
+                } else if (current === 1) {
+                    return `📏 MĚŘENÍ VZDÁLENOSTI: Klikněte druhý bod`;
+                }
+                if (distanceMeasurements.length >= maxDistanceMeasurements) {
+                    return `✅ Vzdálenosti dokončeny (${distanceMeasurements.length}/${maxDistanceMeasurements})`;
+                }
+                return `📏 MĚŘENÍ VZDÁLENOSTI: Změřeno ${distanceMeasurements.length}/${maxDistanceMeasurements} | Klikněte první bod pro další`;
+            }
+            
+            // Výchozí stav po nahrání
+            return "✨ Vyberte akci: ∠ Měřit úhel | 📏 Kalibrace + Měřit vzdálenost | 🔪 Osteotomie";
+        }
+
+        // Funkce pro detekci bodu uvnitř polygonu
+        function isPointInPolygon(point, polygon) {
+            let inside = false;
+            for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                const xi = polygon[i].x, yi = polygon[i].y;
+                const xj = polygon[j].x, yj = polygon[j].y;
+                
+                const intersect = ((yi > point.y) !== (yj > point.y))
+                    && (point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi);
+                if (intersect) inside = !inside;
+            }
+            return inside;
+        }
+
+        // Rotovat bod kolem středu
+        function rotatePointAround(point, center, angleRad) {
+            const cos = Math.cos(angleRad);
+            const sin = Math.sin(angleRad);
+            const dx = point.x - center.x;
+            const dy = point.y - center.y;
+            return {
+                x: center.x + dx * cos - dy * sin,
+                y: center.y + dx * sin + dy * cos
+            };
+        }
+
+        function drawOsteotomyOverlay() {
+            if (osteotomyPoints.length === 0) return;
+            
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 3 / scale;
+            ctx.fillStyle = '#ff0000';
+            
+            // Kreslit body
+            osteotomyPoints.forEach((p, idx) => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 8 / scale, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Označit hinge (konec linie řezu = bod 1)
+                if (idx === 1) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 15 / scale, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#0000ff';
+                    ctx.lineWidth = 3 / scale;
+                    ctx.stroke();
+                    ctx.strokeStyle = '#ff0000';
+                }
+            });
+            
+            // Kreslit linii řezu
+            if (osteotomyPoints.length >= 2) {
+                ctx.beginPath();
+                ctx.moveTo(osteotomyPoints[0].x, osteotomyPoints[0].y);
+                ctx.lineTo(osteotomyPoints[1].x, osteotomyPoints[1].y);
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 3 / scale;
+                ctx.stroke();
+            }
+            
+            // LIVE PREVIEW: Kreslit dočasný polygon během klikání (3-4 body)
+            if (osteotomyPoints.length >= 3 && osteotomyPoints.length < 5) {
+                ctx.beginPath();
+                ctx.moveTo(osteotomyPoints[0].x, osteotomyPoints[0].y); // cutStart
+                ctx.lineTo(osteotomyPoints[1].x, osteotomyPoints[1].y); // hinge
+                
+                // Propojit všechny naklikaný body okolo nohy
+                for (let i = 2; i < osteotomyPoints.length; i++) {
+                    ctx.lineTo(osteotomyPoints[i].x, osteotomyPoints[i].y);
+                }
+                
+                ctx.closePath();
+                ctx.strokeStyle = '#ffaa00'; // Oranžová pro preview
+                ctx.lineWidth = 2 / scale;
+                ctx.setLineDash([10 / scale, 5 / scale]); // Čárkovaná
+                ctx.stroke();
+                ctx.setLineDash([]); // Reset
+                
+                // Poloprůhledná výplň
+                ctx.fillStyle = 'rgba(255, 170, 0, 0.15)';
+                ctx.fill();
+            }
+            
+            // PREVIEW: Zobrazit čistý obrys segmentu v preview režimu
+            if (osteotomyPoints.length === 5 && osteotomyAngle === 0 && isPreviewMode && savedOsteotomyAngle !== 0) {
+                const hinge = osteotomyPoints[1];
+                const angleRad = (savedOsteotomyAngle * Math.PI) / 180;
+                
+                // Rotovat cutStart pro detekci typu wedge
+                const rotatePoint = (p, center, angle) => {
+                    const cos = Math.cos(angle);
+                    const sin = Math.sin(angle);
+                    const dx = p.x - center.x;
+                    const dy = p.y - center.y;
+                    return {
+                        x: center.x + dx * cos - dy * sin,
+                        y: center.y + dx * sin + dy * cos
+                    };
+                };
+                
+                const cutStartRot = rotatePoint(osteotomyPoints[0], hinge, angleRad);
+                const isRotatingUp = cutStartRot.y < osteotomyPoints[0].y; // CLOSE wedge
+                
+                // CLOSE WEDGE PREVIEW: Červený klín v PŘEDOPERAČNÍ pozici (tam kde ještě JE kost)
+                if (isRotatingUp) {
+                    // Pro preview musíme rotovat klín OPAČNĚ (-angleRad)
+                    // Abychom ukázali kde kost JE před operací (ne kde bude po operaci)
+                    const cutStartRotInverse = rotatePoint(osteotomyPoints[0], hinge, -angleRad);
+                    
+                    // Klín mezi původní linií a inverzně rotovanou linií
+                    ctx.beginPath();
+                    ctx.moveTo(osteotomyPoints[0].x, osteotomyPoints[0].y); // Původní cutStart
+                    ctx.lineTo(hinge.x, hinge.y); // Hinge
+                    ctx.lineTo(cutStartRotInverse.x, cutStartRotInverse.y); // Opačně rotovaný cutStart
+                    ctx.closePath();
+                    
+                    // Červená výplň (transparentnější, bez šrafování)
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.35)';
+                    ctx.fill();
+                    
+                    // Červený obrys
+                    ctx.strokeStyle = '#ff0000';
+                    ctx.lineWidth = 2 / scale;
+                    ctx.stroke();
+                    
+                    // Text s hodnotou úhlu
+                    const midX = (osteotomyPoints[0].x + hinge.x + cutStartRotInverse.x) / 3;
+                    const midY = (osteotomyPoints[0].y + hinge.y + cutStartRotInverse.y) / 3;
+                    ctx.save();
+                    ctx.translate(midX, midY);
+                    ctx.scale(1/scale, 1/scale);
+                    ctx.font = 'bold 18px Arial';
+                    ctx.fillStyle = '#ff0000';
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 4;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const angleText = `${Math.abs(savedOsteotomyAngle).toFixed(1)}°`;
+                    ctx.strokeText(angleText, 0, 0);
+                    ctx.fillText(angleText, 0, 0);
+                    ctx.restore();
+                }
+                
+                // Oranžový obrys segmentu (vždy v preview)
+                ctx.beginPath();
+                ctx.moveTo(osteotomyPoints[0].x, osteotomyPoints[0].y);
+                ctx.lineTo(osteotomyPoints[1].x, osteotomyPoints[1].y);
+                ctx.lineTo(osteotomyPoints[2].x, osteotomyPoints[2].y);
+                ctx.lineTo(osteotomyPoints[3].x, osteotomyPoints[3].y);
+                ctx.lineTo(osteotomyPoints[4].x, osteotomyPoints[4].y);
+                ctx.closePath();
+                ctx.strokeStyle = '#ffaa00';
+                ctx.lineWidth = 2 / scale;
+                ctx.setLineDash([10 / scale, 5 / scale]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // NORMÁLNÍ: Oranžový obrys když je 0° BEZ preview režimu
+            else if (osteotomyPoints.length === 5 && osteotomyAngle === 0 && !isPreviewMode) {
+                ctx.beginPath();
+                ctx.moveTo(osteotomyPoints[0].x, osteotomyPoints[0].y); // cutStart
+                ctx.lineTo(osteotomyPoints[1].x, osteotomyPoints[1].y); // hinge
+                ctx.lineTo(osteotomyPoints[2].x, osteotomyPoints[2].y); // pravý kotník
+                ctx.lineTo(osteotomyPoints[3].x, osteotomyPoints[3].y); // pata
+                ctx.lineTo(osteotomyPoints[4].x, osteotomyPoints[4].y); // levý kotník
+                ctx.closePath();
+                
+                ctx.strokeStyle = '#ffaa00'; // Oranžová
+                ctx.lineWidth = 2 / scale;
+                ctx.setLineDash([10 / scale, 5 / scale]); // Čárkovaná
+                ctx.stroke();
+                ctx.setLineDash([]); // Reset
+                
+                // Poloprůhledná výplň
+                ctx.fillStyle = 'rgba(255, 170, 0, 0.15)';
+                ctx.fill();
+            }
+            
+            // Kreslit a rotovat polygon s oříznutým obrázkem (5 bodů + rotace)
+            if (osteotomyPoints.length === 5 && osteotomyAngle !== 0) {
+                const hinge = osteotomyPoints[1]; // Hinge je konec linie řezu
+                const angleRad = (osteotomyAngle * Math.PI) / 180;
+                
+                // Rotovat body nejdřív (potřebujeme je pro wedge)
+                const rotatePoint = (p, center, angle) => {
+                    const cos = Math.cos(angle);
+                    const sin = Math.sin(angle);
+                    const dx = p.x - center.x;
+                    const dy = p.y - center.y;
+                    return {
+                        x: center.x + dx * cos - dy * sin,
+                        y: center.y + dx * sin + dy * cos
+                    };
+                };
+                
+                const cutStartRot = rotatePoint(osteotomyPoints[0], hinge, angleRad);
+                const ankle1Rot = rotatePoint(osteotomyPoints[2], hinge, angleRad);
+                const heelRot = rotatePoint(osteotomyPoints[3], hinge, angleRad);
+                const ankle2Rot = rotatePoint(osteotomyPoints[4], hinge, angleRad);
+                
+                // DETEKCE: Rotuje segment DOLŮ (open) nebo NAHORU (close)?
+                const isRotatingDown = cutStartRot.y > osteotomyPoints[0].y;
+                const isRotatingUp = cutStartRot.y < osteotomyPoints[0].y;
+                
+                // Nakreslit šedou oblast na původní pozici (ukazuje kterou část rotujeme)
+                ctx.beginPath();
+                ctx.moveTo(osteotomyPoints[0].x, osteotomyPoints[0].y); // cutStart
+                ctx.lineTo(hinge.x, hinge.y); // hinge
+                ctx.lineTo(osteotomyPoints[2].x, osteotomyPoints[2].y); // pravý kotník
+                ctx.lineTo(osteotomyPoints[3].x, osteotomyPoints[3].y); // pata
+                ctx.lineTo(osteotomyPoints[4].x, osteotomyPoints[4].y); // levý kotník
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(50, 50, 50, 0.7)'; // Tmavě šedá poloprůhledná
+                ctx.fill();
+                
+                // Nakreslit rotovaný polygon s oříznutým obrázkem
+                ctx.save();
+                
+                // CLOSE WEDGE: Ořezat rotovaný segment PŮVODNÍ linií řezu (rotace nahoru)
+                if (isRotatingUp) {
+                    // Pro close wedge ořezáváme rotovaný segment původní linií řezu
+                    ctx.beginPath();
+                    ctx.moveTo(osteotomyPoints[0].x, osteotomyPoints[0].y); // Původní cutStart
+                    ctx.lineTo(hinge.x, hinge.y); // Hinge
+                    ctx.lineTo(ankle1Rot.x, ankle1Rot.y); // Rotované body nohy
+                    ctx.lineTo(heelRot.x, heelRot.y);
+                    ctx.lineTo(ankle2Rot.x, ankle2Rot.y);
+                    ctx.closePath();
+                    ctx.clip();
+                } else {
+                    // OPEN WEDGE: Standardní clipping rotovaným polygonem (rotace dolů)
+                    ctx.beginPath();
+                    ctx.moveTo(cutStartRot.x, cutStartRot.y); // Rotovaný začátek řezu
+                    ctx.lineTo(hinge.x, hinge.y);
+                    ctx.lineTo(ankle1Rot.x, ankle1Rot.y);
+                    ctx.lineTo(heelRot.x, heelRot.y);
+                    ctx.lineTo(ankle2Rot.x, ankle2Rot.y);
+                    ctx.closePath();
+                    ctx.clip();
+                }
+                
+                // Rotovat celý kontext kolem hinge
+                ctx.translate(hinge.x, hinge.y);
+                ctx.rotate(angleRad);
+                ctx.translate(-hinge.x, -hinge.y);
+                
+                // Nakreslit obrázek (jen ta část která je v clipu)
+                ctx.drawImage(image, 0, 0);
+                
+                ctx.restore();
+                
+                // Vizualizace úhlu rotace (jen když rotujeme)
+                if (osteotomyAngle !== 0) {
+                    // Nakreslit oblouk mezi původním a rotovaným cutStart
+                    const arcRadius = 60 / scale; // Poloměr oblouku
+                    
+                    // Úhel od hinge k původnímu cutStart
+                    const angle1 = Math.atan2(
+                        osteotomyPoints[0].y - hinge.y,
+                        osteotomyPoints[0].x - hinge.x
+                    );
+                    
+                    // Úhel k rotovanému cutStart
+                    const angle2 = angle1 + angleRad;
+                    
+                    // Nakreslit oblouk
+                    ctx.strokeStyle = '#ffaa00'; // Oranžová
+                    ctx.lineWidth = 3 / scale;
+                    ctx.beginPath();
+                    ctx.arc(hinge.x, hinge.y, arcRadius, angle1, angle2, angleRad < 0);
+                    ctx.stroke();
+                    
+                    // Nakreslit čáry od středu
+                    ctx.strokeStyle = 'rgba(255, 170, 0, 0.5)';
+                    ctx.lineWidth = 1.5 / scale;
+                    ctx.setLineDash([5 / scale, 3 / scale]);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(hinge.x, hinge.y);
+                    ctx.lineTo(hinge.x + Math.cos(angle1) * arcRadius, hinge.y + Math.sin(angle1) * arcRadius);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(hinge.x, hinge.y);
+                    ctx.lineTo(hinge.x + Math.cos(angle2) * arcRadius, hinge.y + Math.sin(angle2) * arcRadius);
+                    ctx.stroke();
+                    
+                    ctx.setLineDash([]);
+                    
+                    // Zobrazit text s úhlem
+                    const midAngle = (angle1 + angle2) / 2;
+                    const textRadius = arcRadius + 25 / scale;
+                    const textX = hinge.x + Math.cos(midAngle) * textRadius;
+                    const textY = hinge.y + Math.sin(midAngle) * textRadius;
+                    
+                    ctx.fillStyle = '#ffaa00';
+                    ctx.font = `bold ${20 / scale}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(`${Math.abs(osteotomyAngle).toFixed(1)}°`, textX, textY);
+                }
+                
+                // Zelený obrys odstraněn - není potřeba
+            }
+        }
+
+        // ========== DLAHY FUNKCE ==========
+        
+        function insertPlate() {
+            if (!image) {
+                alert('Nejprve nahrajte RTG snímek!');
+                return;
+            }
+            
+            if (!pixelsPerCm) {
+                alert('Nejprve proveďte kalibraci (📏 Kalibrace)!');
+                return;
+            }
+            
+            // Otevřít modal pro výběr dlahy
+            document.getElementById('plateModal').style.display = 'flex';
+        }
+        
+        function hidePlateModal() {
+            document.getElementById('plateModal').style.display = 'none';
+        }
+        
+        // Globální proměnná pro nahraný obrázek
+        let uploadedPlateImage = null;
+        
+        function showUploadPlateModal() {
+            hidePlateModal();
+            document.getElementById('uploadPlateModal').style.display = 'flex';
+            // Reset formuláře
+            document.getElementById('uploadPlateCode').value = '';
+            document.getElementById('uploadPlateName').value = '';
+            document.getElementById('uploadPlateLength').value = '';
+            document.getElementById('uploadPlateWidth').value = '';
+            document.getElementById('uploadPreview').innerHTML = '';
+            uploadedPlateImage = null;
+        }
+        
+        function hideUploadPlateModal() {
+            document.getElementById('uploadPlateModal').style.display = 'none';
+        }
+        
+        function handlePlateImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.match('image/png')) {
+                alert('Prosím nahrajte PNG obrázek!');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    uploadedPlateImage = img;
+                    
+                    // AUTOMATICKY vypočítat rozměry z PNG (10px = 1mm)
+                    const lengthMm = img.width / 10;  // px → mm
+                    const widthMm = img.height / 10;  // px → mm
+                    
+                    // Automaticky vyplnit
+                    document.getElementById('uploadPlateLength').value = lengthMm.toFixed(1);
+                    document.getElementById('uploadPlateWidth').value = widthMm.toFixed(1);
+                    
+                    // Zobrazit náhled
+                    const preview = document.getElementById('uploadPreview');
+                    preview.innerHTML = `
+                        <div style="background: #e8f5e9; padding: 10px; border-radius: 4px; border: 2px solid #4caf50;">
+                            <img src="${e.target.result}" style="max-width: 200px; max-height: 100px; display: block; margin: 0 auto; border: 1px solid #ddd;">
+                            <p style="margin: 10px 0 5px 0; font-size: 13px; font-weight: bold; color: #2e7d32;">
+                                ✅ PNG načten: ${img.width} × ${img.height}px
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #666;">
+                                Reálné rozměry: ${lengthMm.toFixed(1)}mm × ${widthMm.toFixed(1)}mm<br>
+                                <small>(měřítko 10px = 1mm)</small>
+                            </p>
+                        </div>
+                    `;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function confirmUploadPlate() {
+            if (!uploadedPlateImage) {
+                alert('Nejprve vyberte PNG obrázek!');
+                return;
+            }
+            
+            const code = document.getElementById('uploadPlateCode').value.trim();
+            const name = document.getElementById('uploadPlateName').value.trim();
+            const length = parseFloat(document.getElementById('uploadPlateLength').value);
+            const width = parseFloat(document.getElementById('uploadPlateWidth').value);
+            
+            if (!code || !name || !length || !width) {
+                alert('Vyplňte všechna pole!');
+                return;
+            }
+            
+            if (length <= 0 || width <= 0) {
+                alert('Délka a tloušťka musí být kladné čísla!');
+                return;
+            }
+            
+            // Vypočítat velikost v pixelech podle kalibrace
+            const lengthInCm = length / 10;
+            const widthInCm = width / 10;
+            const lengthInPixels = lengthInCm * pixelsPerCm;
+            const widthInPixels = widthInCm * pixelsPerCm;
+            
+            // Vytvořit dlahu
+            const plate = {
+                code: code,
+                name: name,
+                x: image.width / 2,
+                y: image.height / 2,
+                width: lengthInPixels,
+                height: widthInPixels,
+                rotation: 0,
+                realLength: length,
+                scale: 1.0,
+                type: 'image',
+                image: uploadedPlateImage
+            };
+            
+            plates.push(plate);
+            currentPlate = plate;
+            
+            hideUploadPlateModal();
+            updatePlatesList();
+            draw();
+            
+            alert(`Dlaha "${name}" úspěšně přidána!`);
+        }
+        
+        async function selectPlate(plateCode) {
+            hidePlateModal();
+            
+            // Definice dlah
+            const plateDefinitions = {
+                '9.256.365': {
+                    code: '9.256.365',
+                    name: 'LCP Proximal Tibia Plate',
+                    length: 128, // mm
+                    width: 4,    // mm
+                    holes: 8,
+                    holePositions: [10, 27, 44, 61, 78, 95, 110, 122], // mm od začátku
+                    type: 'generated' // Generovaný obdélník
+                },
+                '9.256.368': {
+                    code: '9.256.368',
+                    name: 'LCP Proximal Tibia Plate',
+                    length: 180, // mm
+                    width: 4,    // mm
+                    holes: 10,
+                    holePositions: [10, 30, 50, 70, 90, 110, 130, 150, 165, 175],
+                    type: 'generated'
+                },
+                '9.256.380': {
+                    code: '9.256.380',
+                    name: 'Custom Plate 80mm (PNG)',
+                    length: 80, // mm
+                    width: 5,   // mm  
+                    type: 'image', // PNG obrázek
+                    imageData: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAEaCAYAAAA/lAFyAAAOaElEQVR42u3d2ZNc110H8O+0ZEm2YkmxY9mWbC1xOQHHIY4hBMJSxVIUBW+88RTyD/BH8QAUD8AbVUAVW4VNji0nZPGSaLHs2Bbe8BbLUjcP59zqO1e3lxnN0svnU9U1m9Qzfbv7fM/vnHvP2QgA62aQZNj6+rEkX09yOMnRJH+R5O36s9GkO9lwHAHWwka9NcFxIMkvJHkiyadJnk/yQpJzSb6a5G96gmaTg44pwMpXG6PW7USSX0pyJsnrSf4hyZutULmc5FeSnE7yag2dkQoEYL2Co109nEvydJJjtdJ4NsknnZBpPJjkt5P8+bQqRAUCsDraw1TDWlF8JcmXktxIcrGGR7c6GXa+93qSj5I8nuSlzBjKAmC5q432iNKJJL+T5FtJ/iDJyU7IDOYIoeNJvtm6/95/CMDyBke7Mjib5BczHqZ6LsnPOtXGaAv3+3sp8yMX+6oQAQKwXCadTfVkytlUF5P8qBMG8wZH9/ccTvLHSf4stw91CRCAJao22kFwPOVsqrMpcxbPZHw2VTdk7qS6+bX69bdjLgRg6YKj7WySP0ryJ0m+keRI599u7PDvPpAyl3Kke98qEIDF060gBinDVF/Ozg5TzVuFPJUyEf/3qhCAxa022h374ynXY3wryR+mXJ/RDpnBHlZA36x/TxNuKhCABQmOdq/+TMrZVMeTvJhy0d92zqbaqWpolHJNyJeS/G3z97qQEGB/dC/6a4apnkxyM5OHqfZ6+GhUf/dLSb6W5KEkbyTZUIEA7H21kVYQHKvVxrmUs6ieqQ10N2T2O+yS5OEkv5nkL5MMVCAAexccw1YYtIepXqqN8cedamMvh6rmqUJeS5nEfyzJj1UgALvbc+87m+rJJLdShql+2AmZRQmNvscyqIH3u0n+SgUCsDvVRmpwjLJ5mOp6kn9MufivGzKLeHps+++7lbLR1LEkT6tAAHY2OLpnUz2dsrjhSylnU328BNVGX/V0pD6WL9bw+08BArCzDe1Gxhf9LdswVd/f97mMz766kjLJ/3/NAwVgew1t0n821fXa0L4+IWSWoXo6Xx/PPUm+X4PwVjtkBAjAnTW0j6YsadicTbXMw1QbKRtQfTllA6rvJHl50mMXIADba2ibs6mGSZ5P8oNOQ7tMwXG0huDnU65FuZA5VvYVIACTK410Gs57U4Z1zmd5h6nawfZgkl9Omed4uVYcH80bggIEYHMApCcE2mdTvZwyTDV3Q7sgwdF+TF9I8tUkdyX5Xq2gtlw9CRBAYNweGPem7LtxLsl9KXMa/5PlOpuqWxEdrKHxRJIParVxeUrIzPULANbFYEJg3JUyGX4+Zd+LQcoQ1eUkVzNeCXdbDe0+B8fxlNNwzyR5NWV+4+1OBoy2+4sAVr3K6KsUHqqBcTrlIrn3U65zuJzk3Z7gWYZhqvbf+EjKxPiJJC/UiuPGTj4eAQKsYmD0VRnHU4akztRG9WcpiwNeqh/nDZ5FrjaSsmfHV+rnF7OLZ4cJEGDZTRqWOpzxsNQD9XvXk/wkySut3vis+1mG4DiccnbYF2r1dCFluGpSyOzYHwGwjFVGX0/6VMbDUodrY3ql3t6bEBiLXmVkSgVxX8ppuKfqY7yQusxI9mDYTYAAyxIYfdXBZzMeljqWcrbUtZR5jNe3EDzLEBx9y4wczXiZkZt7FRwCBFjGwDhSw+J8ysVvw5Qrpi+lDEt9OqHKGC7xcZi0zMizKUunTAqZPfkDARalsez2nDdShqPOp2yneijJOxkPS70/ITCWscqYFBz3pJxN9VjKHM6FLMiWtwIEWLQq4/6Mh6WOZjwsdSnj9ZlWKTDaj6W7zMjXUk4A+HHKsikLdfW7AAH2OzDuSbnq+2zKsNTN2sO+VIPj5pz3s8zB0X4sj6csm3Io42VGRosUHAIE2KvQ6DZ4BzIelnoo5Srwt1Mmvq8k+XCFq4zusWkvM/JUyjUcH6Zc9HdpSsgszIMA2O0q44GUYalHU4alPsh4WOp/1yAwJgXHsZRhqrMpFzP+dzYvM7LQq/sKEGA3AuMzGQ9L3ZcyDPVarTKudf79Mp9eO6/u0NPpGhwnkrxYK45PJvzbhX4BAGylIWx6xe0G7mDK2kvNsNQgyVsZL0b40RpVGZlSQTyRMlSVlLmN708JmaV4gADbqTJO1sB4JGUi/P2UazEuZTwMs06BMSk4DqVc9PfFlCvjn6lV2KSQWaoHCjBPYNybMo9xNmXo5UaSn6asLfVabr9+Y9WHpWYds/tShqlO1yrsQsbLqQxW4dgIEGDWHhnnUoalkjLhfTm375GxblXGpGN2oB6vp1LmgX6Q5LnswzIjAgTYzR7zrD0y7k5ZmK+56vudNQ6MacfsZA2NR1LOMPswyXdTtr5tH6vhKh6UgffT0htt82esV2D09ZiPZ3y21Imsxh4Ze3XMmn1FbqQs3HgpZQn1Yec+hqt8kGBjxuthK9teCrPFsJU9Mt5MGZZ6JeNTSWfdzzoFxt31mJ3N5n1FmmPWN5S3DiGbjSS/KkiWyjBlPPVW63Zzwufd27D1cbiAjcLGnJ2bjTnenOsWZPPukXEoZSJ3lfbI2OmQ7btS/p2UeZ8rGe+3sY7H7LYX3Z8m+ed60IZhGV70B+vz1b0NWh/bt43Ora8RHrVuwwm3ScF0c5th1g600QK+NxY5zObZI+PROtzycR1auZTV2iNjJ0P2wYznMe7J+Er5y7XaWNdjNtXBWr5+V7u8ltph0w6g7u3ghM+br++eEGbt+93ofMyMMBv2BNqtXQizvvtNz9+zSGE27DRe7T0y7q/ffzNlIb5rmb5HxjpcyNf3WE9k8zzGJylzPv9VPw7nvJ+1drAekEfqQdtwYFZWX4N4q9Vg7vcbfdATPNsJs8NbqMoGncah3ViPem59Fdl2wqzv62FPdTac8NwNWsNSp1pDLFeS/Htm75GxqiMN0xr6e2pYNCv+NhtR/TDT535GAmP6AW+2RfzX+ka75bAwx7DNrP8777DNor0xB3NWZfOEWV+QzTvEOCnMUkPyk9rwXc5q75Exz/OVnlBsllY5lzKPcaAVslezmhtR7UsF8mKS35/wJKBi2erPFinIuo3wtMcyar0HFuV9MCnIPuh09Lo971V+H3fnH9qP9aGM5zHuznhple+lrMu1jlXZrgfI+/UAnkhZpwUE2e6E2bTqrK8qa8Lg5pSe96oPsUwbluqeLNBcw/If6V9aZZDNQ5Hs0BviGykXwzyTFb1iEljKwGg7mvE8xv31529kvET8jRkhyy4FyMkkv57krwUIsCCBcVfGS8SfTBm+ezvjeYwPBMb+OlifvDdTJuaayTmA3QyNpqPabexP1QqjWYvrvVpdXMzsJeJ1fPchQAYpE3JvpYwnvhCn8wK7V2WMMj4J4P4aGI+mbO/aXPT47ZSl4qcFj8BYgABpnoSXk/xcDZBBnM4L7FxgNB3SZqvbMymT4M08xvM1OD6dUWVolxYsQJon9mqSr8ccCLBzgXEom+cxNlKGoi4n+ZfM3upWW7TgAdI8aTdT1rF/uPYEDGMBk3T3Rh+1wuRUynD4qZRlVt5Nmcd4NrP3FBEYSxggjctJHhcgwIwqo93Qfy7jC/juTZnHuJbk39K/eKN5jBULkOZJ/EmSn2/1CACB0a0y7s3mTahu1aB4rnY+b06oMroT6KxQBTJIOa96GFelg8DYvPZWszf6yfq9t1JOvLlaK46+wDAstQYvmvaTPky5Kv3TJBdiQh1WWXceo/39ZrXfh2uAvJvxhkrvzggM1jBAmjmPB5L8RlyVDqtaZfQ19A9kPI/xmZSzo5oNld7Ywv2wRtpDWKP6orheexxHcvtev+scsLv5f6b9/zt9g4726P+wuIGR3D4sdSyb5zE+TZnH+E7KPMatCVWGDZXoDZDmRXKrhsj5JD/K1s/G2rjDF/xONnoa38UI3e0G8WgPn7vRihz7SYFxJON5jAfq966nbOdwtaezaB6DLb/Zmzft+ZSr0v9uxR5r3+Y9gzk+Dnq+7v5s3u/13Eff70s2b+3a/tj9vO/rWd+f9LNpv2s05XPvpZ2vRrei28AfSFlP6lzKPhmHUq7BeCVlHuO9GYEBW65AmmGsV5L8VspG86MZDedWG815GtFpn7d7WbN2cut+Pq1KGfV8Puk2TP9Wp9Ma/GZfh3kb+GwhpJrv35XJ27YOZhzTwZRjm56Ps45v9/O+W+YIpuGMY7qdkJwVwKMpHycF525UwFt1snb+Tqcsff5hfS//U602+qoVFQY72mtqJs6fTvL5WtpuTGlE52k4R3P2erfaO+7e77Sesp7V7g6bTAv+WZ2GeUNy3k7LPB2UeTom6emc9L1/RhM6JPN0RkZTqrx53juDWmF8NmU/jJ+mTHy/2gmFacumw44FiCGHrd/HXs617Mcc0yL0rpclOCcF6LzV+1YDNLW6uJbbt2IwLMW+BchgDxrOO2mMvCHWq+OyU2e3je7wNbbIrzuBgQoEvN+29O8FBgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOyF/wfmL7/8UYd/hAAAAABJRU5ErkJggg=='
+                }
+            };
+            
+            const plateDef = plateDefinitions[plateCode];
+            if (!plateDef) return;
+            
+            // Pro PNG dlahy načíst obrázek
+            if (plateDef.type === 'image') {
+                console.log('Loading PNG plate:', plateDef.code);
+                const img = new Image();
+                img.onload = function() {
+                    console.log('PNG loaded successfully:', img.width, 'x', img.height);
+                    // Vypočítat velikost v pixelech podle kalibrace
+                    const lengthInCm = plateDef.length / 10;
+                    const widthInCm = plateDef.width / 10;
+                    const lengthInPixels = lengthInCm * pixelsPerCm;
+                    const widthInPixels = widthInCm * pixelsPerCm;
+                    
+                    const plate = {
+                        code: plateDef.code,
+                        name: plateDef.name,
+                        x: image.width / 2,
+                        y: image.height / 2,
+                        width: lengthInPixels,
+                        height: widthInPixels,
+                        rotation: 0,
+                        realLength: plateDef.length,
+                        scale: 1.0,
+                        type: 'image',
+                        image: img
+                    };
+                    
+                    console.log('Plate created:', plate);
+                    plates.push(plate);
+                    currentPlate = plate;
+                    updatePlatesList();
+                    draw();
+                };
+                
+                img.onerror = function(e) {
+                    console.error('PNG load error:', e);
+                    alert('Chyba při načítání PNG dlahy!');
+                };
+                
+                // Načíst z inline base64
+                console.log('Setting image source, base64 length:', plateDef.imageData.length);
+                img.src = plateDef.imageData;
+                    
+                return;
+            }
+            
+            // Pro generované dlahy (obdélníky s otvory)
+            const lengthInCm = plateDef.length / 10;
+            const widthInCm = plateDef.width / 10;
+            const lengthInPixels = lengthInCm * pixelsPerCm;
+            const widthInPixels = widthInCm * pixelsPerCm;
+            
+            const plate = {
+                code: plateDef.code,
+                name: plateDef.name,
+                x: image.width / 2,
+                y: image.height / 2,
+                width: lengthInPixels,
+                height: widthInPixels,
+                rotation: 0,
+                realLength: plateDef.length,
+                holePositions: plateDef.holePositions,
+                scale: 1.0,
+                type: 'generated'
+            };
+            
+            plates.push(plate);
+            currentPlate = plate;
+            
+            updatePlatesList();
+            draw();
+        }
+        
+        function drawPlates() {
+            plates.forEach(plate => {
+                // Přeskočit neviditelné dlahy
+                if (plate.visible === false) return;
+                
+                ctx.save();
+                
+                // Posunout na pozici dlahy
+                ctx.translate(plate.x, plate.y);
+                ctx.rotate(plate.rotation);
+                
+                const plateWidth = plate.width * plate.scale;
+                const plateHeight = plate.height * plate.scale;
+                
+                // Pro PNG obrázky
+                if (plate.type === 'image' && plate.image) {
+                    console.log('Drawing PNG plate:', plate.code, 'at', plate.x, plate.y, 'size:', plateWidth, 'x', plateHeight);
+                    // Nakreslit PNG obrázek
+                    ctx.drawImage(
+                        plate.image,
+                        -plateWidth / 2,
+                        -plateHeight / 2,
+                        plateWidth,
+                        plateHeight
+                    );
+                    console.log('PNG drawn');
+                } else if (plate.type === 'image') {
+                    console.warn('PNG plate but no image loaded!', plate);
+                } else {
+                    // Pro generované dlahy (obdélníky)
+                    // Modrá poloprůhledná výplň
+                    ctx.fillStyle = 'rgba(0, 150, 255, 0.6)';
+                    ctx.fillRect(-plateWidth / 2, -plateHeight / 2, plateWidth, plateHeight);
+                    
+                    // Tmavý obrys
+                    ctx.strokeStyle = 'rgba(0, 100, 200, 0.9)';
+                    ctx.lineWidth = 2 / scale;
+                    ctx.strokeRect(-plateWidth / 2, -plateHeight / 2, plateWidth, plateHeight);
+                    
+                    // Nakreslit otvory pro šrouby (bílé kroužky) - jen pokud existují
+                    if (plate.holePositions && plate.holePositions.length > 0) {
+                        const holeRadius = 1.2 * pixelsPerCm / 10; // 1.2mm
+                        
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        ctx.strokeStyle = 'rgba(0, 100, 200, 0.9)';
+                        ctx.lineWidth = 1 / scale;
+                        
+                        plate.holePositions.forEach(pos => {
+                            const xPos = (pos / plate.realLength) * plateWidth - plateWidth / 2;
+                            ctx.beginPath();
+                            ctx.arc(xPos, 0, holeRadius, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
+                        });
+                    }
+                }
+                
+                // Nakreslit ovládací prvky (křížek + kruh s bodem)
+                if (plate === currentPlate) {
+                    // Křížek ve středu pro posuv
+                    ctx.strokeStyle = '#00ff00';
+                    ctx.lineWidth = 2 / scale;
+                    ctx.beginPath();
+                    ctx.moveTo(-10 / scale, 0);
+                    ctx.lineTo(10 / scale, 0);
+                    ctx.moveTo(0, -10 / scale);
+                    ctx.lineTo(0, 10 / scale);
+                    ctx.stroke();
+                    
+                    // Kruh s bodem pro rotaci (jako u kyčle)
+                    const rotationRadius = Math.max(plate.width, plate.height) / 2 + 20 / scale;
+                    ctx.strokeStyle = '#00ffff';
+                    ctx.lineWidth = 2 / scale;
+                    ctx.setLineDash([5 / scale, 5 / scale]);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, rotationRadius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // Bod na obvodu kruhu
+                    const handleX = Math.cos(0) * rotationRadius;
+                    const handleY = Math.sin(0) * rotationRadius;
+                    ctx.beginPath();
+                    ctx.arc(handleX, handleY, 6 / scale, 0, Math.PI * 2);
+                    ctx.fillStyle = '#00ffff';
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            });
+        }
+    </script>
+</body>
+</html>
