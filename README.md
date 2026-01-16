@@ -8,53 +8,6 @@
 
 ---
 
-## 🎯 Hlavní funkce
-
-### 🔪 Plánování osteotomií
-- 5-bodový systém pro precizní označení řezu
-- Automatická detekce **OPEN** / **CLOSE wedge** podle směru rotace
-- Slider pro rotaci (-30° až +30°)
-- **Preview režim "Před/Po operaci"**
-  - Před operací: Červený klín ukazuje část kosti k odstranění + hodnota úhlu
-  - Po operaci: Rotovaná kost s vizualizací výsledku
-- Export obou stavů do JPG
-
-### 📐 Měření úhlů
-- Automatické ramena pro přesné měření
-- Neomezený počet měření
-- Switch úhlu (reflex/non-reflex)
-- Skrytí/zobrazení jednotlivých měření
-- Individuální mazání (🗑️ u každého měření)
-
-### 📏 Měření vzdáleností
-- Kalibrace pomocí známé vzdálenosti
-- Automatický přepočet pixel → cm
-- Neomezený počet měření
-- Individuální mazání
-
-### 🦴 Knihovna dlah
-- 3 vestavěné dlahy (T, L, straight plate)
-- Možnost nahrát vlastní dlahy (PNG)
-- Rotace, změna velikosti, přesun
-- Průhlednost (viditelnost kosti pod dlahou)
-
-### 💾 Export
-- Export do JPG (plné rozlišení)
-- Exportuje všechna měření, dlahy a osteotomii
-- Export preview režimu (s červeným klínem)
-
----
-
-## 🚀 Instalace
-
-### Varianta A: Stažení jednoho souboru
-1. Stáhni `index.html`
-2. Otevři v prohlížeči (doporučeno: Chrome, Firefox)
-3. **To je všechno!** ✅
-
-
----
-
 ## 📖 Rychlý start
 
 ### 1. Nahrání snímku
@@ -105,6 +58,54 @@
 - **💾 Export JPG** - Uloží snímek se všemi značeními
 
 ---
+
+## 🎯 Hlavní funkce
+
+### 🔪 Plánování osteotomií
+- 5-bodový systém pro precizní označení řezu
+- Automatická detekce **OPEN** / **CLOSE wedge** podle směru rotace
+- Slider pro rotaci (-30° až +30°)
+- **Preview režim "Před/Po operaci"**
+  - Před operací: Červený klín ukazuje část kosti k odstranění + hodnota úhlu
+  - Po operaci: Rotovaná kost s vizualizací výsledku
+- Export obou stavů do JPG
+
+### 📐 Měření úhlů
+- Automatické ramena pro přesné měření
+- Neomezený počet měření
+- Switch úhlu (reflex/non-reflex)
+- Skrytí/zobrazení jednotlivých měření
+- Individuální mazání (🗑️ u každého měření)
+
+### 📏 Měření vzdáleností
+- Kalibrace pomocí známé vzdálenosti
+- Automatický přepočet pixel → cm
+- Neomezený počet měření
+- Individuální mazání
+
+### 🦴 Knihovna dlah
+- 3 vestavěné dlahy (T, L, straight plate)
+- Možnost nahrát vlastní dlahy (PNG)
+- Rotace, změna velikosti, přesun
+- Průhlednost (viditelnost kosti pod dlahou)
+
+### 💾 Export
+- Export do JPG (plné rozlišení)
+- Exportuje všechna měření, dlahy a osteotomii
+- Export preview režimu (s červeným klínem)
+
+---
+
+## 🚀 Instalace
+
+### Varianta A: Stažení jednoho souboru
+1. Stáhni `index.html`
+2. Otevři v prohlížeči (doporučeno: Chrome, Firefox)
+3. **To je všechno!** ✅
+
+
+---
+
 
 ## 📋 Struktura menu (pravý panel)
 
