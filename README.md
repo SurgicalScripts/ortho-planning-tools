@@ -1,31 +1,188 @@
-# Ortopedické plánovací nástroje
+Ortho Planning Tools
+Profesionální webová aplikace pro plánování ortopedických operací na RTG snímcích dolních končetin.
+Show Image
+Show Image
+Show Image
 
-Webové aplikace pro ortopedické plánování a analýzu RTG snímků.
+🎯 Hlavní funkce
+🔪 Plánování osteotomií
 
-## Dostupné nástroje
+5-bodový systém pro precizní označení řezu
+Automatická detekce OPEN / CLOSE wedge podle směru rotace
+Slider pro rotaci (-30° až +30°)
+Preview režim "Před/Po operaci"
 
-### Analyzátor dolní končetiny
-Interaktivní nástroj pro analýzu RTG snímků dolních končetin s přesnými měřeními úhlů a vzdáleností.
+Před operací: Červený klín ukazuje část kosti k odstranění + hodnota úhlu
+Po operaci: Rotovaná kost s vizualizací výsledku
 
-### Plánovač osteotomie
-Aplikace pro plánování klínovité osteotomie s chirurgickou vizualizací.
 
-## Použití
+Export obou stavů do JPG
 
-Navštivte: [https://surgicalscripts.github.io/ortho-planning-tools/](https://surgicalscripts.github.io/ortho-planning-tools/)
+📐 Měření úhlů
 
-## Funkce
+Automatické ramena pro přesné měření
+Neomezený počet měření
+Switch úhlu (reflex/non-reflex)
+Skrytí/zobrazení jednotlivých měření
+Individuální mazání (🗑️ u každého měření)
 
-- Nahrání a analýza RTG snímků
-- Přesná měření úhlů
-- Výpočty vzdáleností
-- Vizualizace chirurgického plánování
-- Mobilní rozhraní
+📏 Měření vzdáleností
 
-## Manuály
+Kalibrace pomocí známé vzdálenosti
+Automatický přepočet pixel → cm
+Neomezený počet měření
+Individuální mazání
 
-Podrobné návody k použití najdete v sekci dokumentace na webu.
+🦴 Knihovna dlah
 
----
+3 vestavěné dlahy (T, L, straight plate)
+Možnost nahrát vlastní dlahy (PNG)
+Rotace, změna velikosti, přesun
+Průhlednost (viditelnost kosti pod dlahou)
 
-Vytvořeno pro ortopedické chirurgické plánování a vzdělávání.
+💾 Export
+
+Export do JPG (plné rozlišení)
+Exportuje všechna měření, dlahy a osteotomii
+Export preview režimu (s červeným klínem)
+
+
+🚀 Instalace
+Varianta A: Stažení jednoho souboru
+
+Stáhni rtg_uhly_mereni.html
+Otevři v prohlížeči (doporučeno: Chrome, Firefox)
+To je všechno! ✅
+
+Varianta B: Klonování repozitáře
+bashgit clone https://github.com/SurgicalScripts/ortho-planning-tools.git
+cd ortho-planning-tools
+# Otevři rtg_uhly_mereni.html v prohlížeči
+
+📖 Rychlý start
+1. Nahrání snímku
+
+Klikni "📁 Nahrát RTG"
+Vyber JPG nebo PNG soubor
+Snímek se zobrazí na canvas
+
+2. Plánování osteotomie
+
+Klikni "🔪 Osteotomie"
+Označ 5 bodů:
+
+Začátek řezu
+Konec řezu (= střed rotace, hinge)
+Pravý kotník
+Pata
+Levý kotník
+
+
+Použij slider pro rotaci
+Klikni "👁️ Před op." pro zobrazení klínu
+Export JPG - exportuje preview NEBO pooperační stav
+
+3. Měření úhlů
+
+Klikni "∠ Měřit úhel"
+První kliknutí → Vyber počet měření
+Další kliknutí → Rychle přidává jednotlivá měření
+Označ 3 body: začátek ramene → vrchol → konec ramene
+Úhel se automaticky vypočítá
+🗑️ - smaž konkrétní měření
+
+4. Měření vzdáleností
+
+Klikni "📏 Kalibrace"
+Označ 2 body na známé vzdálenosti (např. pravítko)
+Zadej skutečnou vzdálenost v cm
+Klikni "📏 Měřit vzdálenost"
+Označ 2 body které chceš změřit
+Vzdálenost se zobrazí v cm
+
+
+🎨 Ovládání
+Myš
+
+Kolečko - Zoom in/out
+Pravé tlačítko + tažení - Posun snímku
+Ctrl + levé tlačítko + tažení - Posun snímku
+Levé tlačítko na bod - Přesun bodu (u měření)
+
+Tlačítka
+
+🔄 Reset zobrazení - Vrátí zoom a posun na výchozí
+💾 Export JPG - Uloží snímek se všemi značeními
+
+
+📋 Struktura menu (pravý panel)
+Menu je seřazeno podle priority:
+
+🔪 Osteotomie (nejvyšší priorita)
+📋 Vložené dlahy
+📊 Naměřené úhly
+📐 Naměřené vzdálenosti
+📏 Kalibrace
+📍 Aktuální body
+📋 Instrukce
+
+
+💡 Tipy a triky
+Osteotomie
+
+Close wedge = rotace NAHORU (k tělu)
+Open wedge = rotace DOLŮ (od těla)
+Preview režim ukazuje červený klín kde ještě JE kost (před operací)
+Export v preview režimu vytvoří JPG pro prezentaci plánování
+
+Měření
+
+Drag & drop bodů pro přesné umístění
+Switch úhlu pokud potřebuješ reflex/non-reflex
+Každé měření má vlastní koš 🗑️
+
+Kalibrace
+
+Použij pravítko na snímku nebo známý rozměr implantátu
+Kalibrace platí pro všechna následující měření vzdáleností
+
+
+🔒 Privacy & Security
+
+✅ 100% offline - žádná data neopouštějí počítač
+✅ Žádný server - vše běží lokálně v prohlížeči
+✅ GDPR compliant - žádné ukládání dat
+✅ Žádné závislosti - jeden HTML soubor
+
+
+🛠️ Technické informace
+
+Jazyk: HTML5 + JavaScript (vanilla)
+Canvas API pro vykreslování
+Soubor: ~160 KB (jeden soubor)
+Prohlížeče: Chrome, Firefox, Safari, Edge (moderní verze)
+Offline: Ano (po stažení)
+
+
+📝 Changelog
+v1.0.0 (2025-01-12)
+
+✅ Initial release
+✅ Osteotomy planning s preview režimem
+✅ Angle measurements
+✅ Distance measurements s kalibrací
+✅ Plate library
+✅ JPG export
+✅ Individuální mazání měření
+
+
+🤝 Přispívání
+Návrhy a bugreporty vítány! Otevři Issue nebo Pull Request.
+
+📄 Licence
+MIT License - použij, uprav, sdílej.
+
+📞 Kontakt
+Pro více informací viz manual.html nebo otevři Issue na GitHubu.
+
+Vytvořeno pro ortopedické chirurgy s láskou ❤️
