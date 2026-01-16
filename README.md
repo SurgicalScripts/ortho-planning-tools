@@ -48,16 +48,10 @@
 ## 🚀 Instalace
 
 ### Varianta A: Stažení jednoho souboru
-1. Stáhni `rtg_uhly_mereni.html`
+1. Stáhni `index.html`
 2. Otevři v prohlížeči (doporučeno: Chrome, Firefox)
 3. **To je všechno!** ✅
 
-### Varianta B: Klonování repozitáře
-```bash
-git clone https://github.com/SurgicalScripts/ortho-planning-tools.git
-cd ortho-planning-tools
-# Otevři rtg_uhly_mereni.html v prohlížeči
-```
 
 ---
 
@@ -164,19 +158,6 @@ Menu je seřazeno podle priority:
 
 ---
 
-## 📝 Changelog
-
-### v1.0.0 (2025-01-12)
-- ✅ Initial release
-- ✅ Osteotomy planning s preview režimem
-- ✅ Angle measurements
-- ✅ Distance measurements s kalibrací
-- ✅ Plate library
-- ✅ JPG export
-- ✅ Individuální mazání měření
-
----
-
 ## 🤝 Přispívání
 
 Návrhy a bugreporty vítány! Otevři **Issue** nebo **Pull Request**.
@@ -191,7 +172,7 @@ MIT License - použij, uprav, sdílej.
 
 ## 📞 Kontakt
 
-Pro více informací viz [manual.html](manual.html) nebo otevři Issue na GitHubu.
+karel.penicka@gmail.com
 
 ---
 
