@@ -111,6 +111,15 @@
             background: #218838;
         }
 
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
         .file-input-wrapper {
             position: relative;
             overflow: hidden;
@@ -507,6 +516,7 @@
                 <label for="fileInput" class="btn btn-primary">📁 Nahrát RTG snímek</label>
                 <input type="file" id="fileInput" accept="image/*,.dcm,.dicom">
             </div>
+            <button class="btn btn-info" id="loadDemoBtn" style="margin-left: 5px;">🖼️ Demo snímek</button>
 
             <button class="btn btn-secondary" id="measureAngleBtn">∠ Měřit úhel</button>
             <button class="btn btn-secondary" id="calibrateBtn">📏 Kalibrace</button>
@@ -691,6 +701,7 @@
 
             // Event listenery
             document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+            document.getElementById('loadDemoBtn').addEventListener('click', loadDemoImage);
             document.getElementById('measureAngleBtn').addEventListener('click', handleMeasureAngleClick);
             document.getElementById('calibrateBtn').addEventListener('click', startCalibration);
             document.getElementById('measureDistanceBtn').addEventListener('click', startDistanceMeasurement);
@@ -900,6 +911,75 @@
             };
             
             reader.readAsArrayBuffer(file);
+        }
+
+        function loadDemoImage() {
+            // URL demo snímku na GitHubu
+            const demoUrl = 'https://raw.githubusercontent.com/SurgicalScripts/ortho-planning-tools/main/samples/example_1.png';
+            
+            // Načíst obrázek z URL
+            image = new Image();
+            image.crossOrigin = 'anonymous'; // Pro CORS
+            
+            image.onload = function() {
+                // KOMPLETNÍ RESET všech funkcí při novém snímku
+                
+                // Reset úhlů
+                points = [];
+                measurements = [];
+                measurementCounter = 1;
+                maxMeasurements = null;
+                measurementsActive = false;
+                
+                // Reset kalibrace a vzdáleností
+                pixelsPerCm = null;
+                calibrationPoints = [];
+                isCalibrating = false;
+                distanceMeasurements = [];
+                distancePoints = [];
+                maxDistanceMeasurements = null;
+                distanceMeasurementsActive = false;
+                distanceMeasurementCounter = 1;
+                document.getElementById('measureDistanceBtn').disabled = true;
+                
+                // Reset osteotomie
+                osteotomyMode = false;
+                osteotomyPoints = [];
+                osteotomyAngle = 0;
+                savedOsteotomyAngle = 0;
+                isPreviewMode = false;
+                osteotomyStep = 0;
+                
+                // Reset dlah
+                plates = [];
+                currentPlate = null;
+                
+                // Reset všech panels v sidebaru
+                document.getElementById('measurementsSection').style.display = 'none';
+                document.getElementById('platesSection').style.display = 'none';
+                document.getElementById('calibrationSection').style.display = 'none';
+                document.getElementById('osteotomySection').style.display = 'none';
+                document.getElementById('distancesSection').style.display = 'none';
+                document.getElementById('pointsSection').style.display = 'none';
+                
+                // Reset zoom a posun
+                scale = 1;
+                offsetX = 0;
+                offsetY = 0;
+                
+                // SCHOVAT DROP ZONE!
+                document.getElementById('dropZone').classList.add('hidden');
+                
+                // Překreslit
+                draw();
+                updateStatusBar("✅ Demo snímek načten! Obsahuje pravítko pro kalibraci.");
+            };
+            
+            image.onerror = function() {
+                alert('Nepodařilo se načíst demo snímek. Zkontrolujte připojení k internetu.');
+            };
+            
+            image.src = demoUrl;
         }
 
         function loadImage(file) {
